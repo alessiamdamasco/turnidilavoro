@@ -315,7 +315,7 @@
                 </div>
                 <div class="input-group">
                     <label>Posto di Lavoro / Sede</label>
-                    <input type="text" id="turnoSede" placeholder="Scrivi il nome della sede" required>
+                    <input type="text" id="turnoSede" placeholder="Scrivi a mano la sede che desideri" required>
                     <div style="margin-top: 5px;">
                         <span style="font-size: 11px; color:#777; display:block;">Scelte rapide:</span>
                         <button type="button" class="suggest-btn" onclick="impostaSedeRapida('Goldbet stazione')">Goldbet stazione</button>
@@ -369,7 +369,7 @@
 
     <script>
         // Carica dati esistenti o inizializza lo storico fisso protetto
-        let turni = JSON.parse(localStorage.getItem('registro_completo_ally_v2'));
+        let turni = JSON.parse(localStorage.getItem('registro_completo_ally_v3'));
 
         if (!turni || turni.length === 0) {
             const storicoIniziale = [
@@ -582,7 +582,7 @@
             ];
 
             turni = storicoIniziale.map((t, idx) => ({ ...t, id: 'id_' + Date.now() + '_' + idx }));
-            localStorage.setItem('registro_completo_ally_v2', JSON.stringify(turni));
+            localStorage.setItem('registro_completo_ally_v3', JSON.stringify(turni));
         }
 
         const mesiNomi = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
@@ -728,7 +728,7 @@
         function eliminaTurno(id) {
             if(confirm("Sei sicura di voler eliminare definitivamente questo turno, Amo?")) {
                 turni = turni.filter(t => t.id !== id);
-                localStorage.setItem('registro_completo_ally_v2', JSON.stringify(turni));
+                localStorage.setItem('registro_completo_ally_v3', JSON.stringify(turni));
                 popolaSelettoreMesi();
                 aggiornaVisualizzazione();
                 resetForm();
@@ -801,7 +801,7 @@
                     }
                 }
 
-                localStorage.setItem('registro_completo_ally_v2', JSON.stringify(turni));
+                localStorage.setItem('registro_completo_ally_v3', JSON.stringify(turni));
                 popolaSelettoreMesi();
                 aggiornaVisualizzazione();
 
@@ -836,7 +836,7 @@
                 }
             }
 
-            localStorage.setItem('registro_completo_ally_v2', JSON.stringify(turni));
+            localStorage.setItem('registro_completo_ally_v3', JSON.stringify(turni));
             resetForm();
             popolaSelettoreMesi();
             document.getElementById('periodFilter').value = data.substring(0, 7);
