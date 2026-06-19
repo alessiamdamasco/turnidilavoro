@@ -136,6 +136,24 @@
 
         .btn-secondary { background: #7f8c8d; }
         .btn-danger { background: #c94c4c; }
+        .btn-warning { background: #f39c12; }
+
+        .suggest-btn {
+            background: #eededf;
+            color: var(--dark-rose);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 5px;
+            margin-right: 5px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .suggest-btn:hover {
+            background: #e0b0b6;
+        }
 
         /* Widget Stipendio */
         .salary-container {
@@ -180,6 +198,7 @@
         .badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
         .badge-goldbet { background: #e3f2fd; color: #0d47a1; }
         .badge-planet { background: #fff3e0; color: #e65100; }
+        .badge-generic { background: #e8e8e8; color: #555555; }
 
         /* Stile Ricerca Giorno */
         .search-box {
@@ -288,18 +307,20 @@
             <!-- Pannello Inserimento / Modifica manuale -->
             <div class="card">
                 <h3 id="formTitle">Gestisci Turno</h3>
-                <input type="hidden" id="editIndex" value="">
+                <input type="hidden" id="editId" value="">
                 
                 <div class="input-group">
                     <label>Data</label>
                     <input type="date" id="turnoData" required>
                 </div>
                 <div class="input-group">
-                    <label>Sede Posto di Lavoro</label>
-                    <select id="turnoSede">
-                        <option value="Goldbet stazione">Goldbet stazione</option>
-                        <option value="Planetwin365 via Marsala">Planetwin365 via Marsala (Extra +40€)</option>
-                    </select>
+                    <label>Posto di Lavoro / Sede</label>
+                    <input type="text" id="turnoSede" placeholder="Scrivi il nome della sede" required>
+                    <div style="margin-top: 5px;">
+                        <span style="font-size: 11px; color:#777; display:block;">Scelte rapide:</span>
+                        <button type="button" class="suggest-btn" onclick="impostaSedeRapida('Goldbet stazione')">Goldbet stazione</button>
+                        <button type="button" class="suggest-btn" onclick="impostaSedeRapida('Planetwin365 via Marsala')">Planetwin365 via Marsala</button>
+                    </div>
                 </div>
                 <div class="input-group">
                     <label>Fascia</label>
@@ -347,11 +368,11 @@
     </div>
 
     <script>
-        // RECUPERO CON STORICO REALE PRE-LOADED (Il tuo archivio protetto è qui dentro!)
-        let turni = JSON.parse(localStorage.getItem('registro_completo_ally'));
+        // Carica dati esistenti o inizializza lo storico fisso protetto
+        let turni = JSON.parse(localStorage.getItem('registro_completo_ally_v2'));
 
         if (!turni || turni.length === 0) {
-            turni = [
+            const storicoIniziale = [
                 {"data": "2024-02-12", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
                 {"data": "2026-05-07", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
                 {"data": "2026-01-31", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
@@ -559,7 +580,9 @@
                 {"data": "2025-10-03", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
                 {"data": "2026-11-11", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"}
             ];
-            localStorage.setItem('registro_completo_ally', JSON.stringify(turni));
+
+            turni = storicoIniziale.map((t, idx) => ({ ...t, id: 'id_' + Date.now() + '_' + idx }));
+            localStorage.setItem('registro_completo_ally_v2', JSON.stringify(turni));
         }
 
         const mesiNomi = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
@@ -578,6 +601,7 @@
             }
 
             const ordinati = Array.from(periodiPresenti).sort().reverse();
+            const vecchioValore = filter.value;
             filter.innerHTML = '';
             
             ordinati.forEach(p => {
@@ -588,11 +612,11 @@
                 filter.appendChild(option);
             });
             
-            const oggiStr = new Date().toISOString().substring(0, 7);
-            if (ordinati.includes(oggiStr)) {
-                filter.value = oggiStr;
-            } else if(ordinati.length > 0) {
-                filter.value = ordinati[0];
+            if (vecchioValore && ordinati.includes(vecchioValore)) {
+                filter.value = vecchioValore;
+            } else {
+                const oggiStr = new Date().toISOString().substring(0, 7);
+                filter.value = ordinati.includes(oggiStr) ? oggiStr : ordinati[0];
             }
         }
 
@@ -616,6 +640,10 @@
             document.getElementById('username').value = '';
             document.getElementById('password').value = '';
             document.getElementById('loginError').style.display = 'none';
+        }
+
+        function impostaSedeRapida(nomeSede) {
+            document.getElementById('turnoSede').value = nomeSede;
         }
 
         function cercaGiornoSpecifico() {
@@ -668,13 +696,15 @@
             }
 
             turniFiltrati.forEach((turno) => {
-                const realIndex = turni.findIndex(t => t === turno);
                 if (turno.sede.toLowerCase().includes("planet")) {
                     conteggioExtraMese++;
                 }
 
                 let giornoSettimana = new Date(turno.data).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric' });
-                const badgeClass = turno.sede.toLowerCase().includes('goldbet') ? 'badge-goldbet' : 'badge-planet';
+                
+                let badgeClass = 'badge-generic';
+                if (turno.sede.toLowerCase().includes('goldbet')) badgeClass = 'badge-goldbet';
+                else if (turno.sede.toLowerCase().includes('planet')) badgeClass = 'badge-planet';
                 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -683,7 +713,8 @@
                     <td>${turno.fascia}</td>
                     <td>${turno.inizio} - ${turno.fine}</td>
                     <td>
-                        <button class="btn" style="padding: 4px 8px; font-size:11px; background:#f39c12;" onclick="caricaModifica(${realIndex})">Modifica</button>
+                        <button class="btn" style="padding: 4px 8px; font-size:11px; background:#f39c12; margin-right:5px;" onclick="caricaModifica('${turno.id}')">Modifica</button>
+                        <button class="btn" style="padding: 4px 8px; font-size:11px; background:#e74c3c;" onclick="eliminaTurno('${turno.id}')">Elimina</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -692,6 +723,16 @@
             const totaleExtra = conteggioExtraMese * 40;
             document.getElementById('extraCount').innerText = `${conteggioExtraMese} turni extra (+${totaleExtra},00 €)`;
             document.getElementById('totalSalary').innerText = `${850 + totaleExtra},00 €`;
+        }
+
+        function eliminaTurno(id) {
+            if(confirm("Sei sicura di voler eliminare definitivamente questo turno, Amo?")) {
+                turni = turni.filter(t => t.id !== id);
+                localStorage.setItem('registro_completo_ally_v2', JSON.stringify(turni));
+                popolaSelettoreMesi();
+                aggiornaVisualizzazione();
+                resetForm();
+            }
         }
 
         function importaFileICS() {
@@ -748,12 +789,19 @@
                             sede = "Planetwin365 via Marsala";
                         }
 
-                        turni.push({ data: dataFormattata, sede, fascia, inizio, fine });
+                        turni.push({ 
+                            id: 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                            data: dataFormattata, 
+                            sede, 
+                            fascia, 
+                            inizio, 
+                            fine 
+                        });
                         turniImportati++;
                     }
                 }
 
-                localStorage.setItem('registro_completo_ally', JSON.stringify(turni));
+                localStorage.setItem('registro_completo_ally_v2', JSON.stringify(turni));
                 popolaSelettoreMesi();
                 aggiornaVisualizzazione();
 
@@ -766,45 +814,54 @@
 
         function salvaTurno() {
             const data = document.getElementById('turnoData').value;
-            const sede = document.getElementById('turnoSede').value;
+            const sede = document.getElementById('turnoSede').value.trim();
             const fascia = document.getElementById('turnoFascia').value;
             const inizio = document.getElementById('oraInizio').value;
             const fine = document.getElementById('oraFine').value;
-            const editIndex = document.getElementById('editIndex').value;
+            const editId = document.getElementById('editId').value;
 
             if(!data) return alert("Inserisci la data del turno!");
+            if(!sede) return alert("Inserisci il posto di lavoro!");
 
-            const t = { data, sede, fascia, inizio, fine };
-
-            if(editIndex === "") {
-                turni.push(t);
+            if(editId === "") {
+                const nuovoTurno = {
+                    id: 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    data, sede, fascia, inizio, fine
+                };
+                turni.push(nuovoTurno);
             } else {
-                turni[editIndex] = t;
+                const index = turni.findIndex(t => t.id === editId);
+                if(index !== -1) {
+                    turni[index] = { id: editId, data, sede, fascia, inizio, fine };
+                }
             }
 
-            localStorage.setItem('registro_completo_ally', JSON.stringify(turni));
+            localStorage.setItem('registro_completo_ally_v2', JSON.stringify(turni));
             resetForm();
             popolaSelettoreMesi();
             document.getElementById('periodFilter').value = data.substring(0, 7);
             aggiornaVisualizzazione();
         }
 
-        function caricaModifica(index) {
-            const t = turni[index];
+        function caricaModifica(id) {
+            const t = turni.find(turno => turno.id === id);
+            if(!t) return;
+
             document.getElementById('turnoData').value = t.data;
             document.getElementById('turnoSede').value = t.sede;
             document.getElementById('turnoFascia').value = t.fascia;
             document.getElementById('oraInizio').value = t.inizio;
             document.getElementById('oraFine').value = t.fine;
             
-            document.getElementById('editIndex').value = index;
+            document.getElementById('editId').value = id;
             document.getElementById('formTitle').innerText = "Modifica questo Turno";
             document.getElementById('btnAnnulla').style.display = "inline-block";
         }
 
         function resetForm() {
             document.getElementById('turnoData').value = '';
-            document.getElementById('editIndex').value = '';
+            document.getElementById('turnoSede').value = '';
+            document.getElementById('editId').value = '';
             document.getElementById('formTitle').innerText = "Gestisci Turno";
             document.getElementById('btnAnnulla').style.display = "none";
         }
