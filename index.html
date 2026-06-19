@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestione Turni Ally - Registro Completo</title>
+    <title>Gestione Turni Ally - Registro Totale</title>
     <style>
         :root {
             --rose-gold: #b76e79;
@@ -206,19 +206,16 @@
 
     <!-- SCHERMATA LOGIN -->
     <div id="loginPage" class="login-container">
-        <!-- Titolo sopra la pagina di login richiesto -->
         <div class="login-main-title">Gestione turni Ally</div>
         
         <div class="login-card">
             <h2>Accesso Riservato</h2>
             <div class="input-group">
                 <label>Username</label>
-                <!-- Credenziali rimosse (Campi vuoti) -->
                 <input type="text" id="username" placeholder="Inserisci il tuo username">
             </div>
             <div class="input-group">
                 <label>Password</label>
-                <!-- Credenziali rimosse (Campi vuoti) -->
                 <input type="password" id="password" placeholder="Inserisci la tua password">
             </div>
             <button class="btn" style="width:100%; margin-top:10px;" onclick="checkLogin()">Accedi</button>
@@ -236,7 +233,7 @@
         <!-- STRUMENTO: CERCA UN GIORNO SPECIFICO -->
         <div class="card" style="border-top-color: #3498db;">
             <h3>🔍 Trova Turno per Data Rapida</h3>
-            <p style="font-size: 14px; color: #666; margin-top: 0;">Vuoi sapere esattamente cosa hai fatto (o farai) in un giorno specifico? Inserisci la data qui sotto:</p>
+            <p style="font-size: 14px; color: #666; margin-top: 0;">Inserisci un giorno specifico (passato o futuro) per scoprire che turno hai fatto:</p>
             <div class="search-box">
                 <div class="input-group" style="margin-bottom: 0; flex: 1;">
                     <label>Scegli il giorno:</label>
@@ -245,15 +242,13 @@
                 <button class="btn" style="background: #3498db;" onclick="cercaGiornoSpecifico()">Cerca Turno</button>
                 <button class="btn btn-secondary" onclick="resetCercaGiorno()">Azzera</button>
             </div>
-            <div id="searchResult" class="search-result-box">
-                <!-- Risultato dinamico della ricerca -->
-            </div>
+            <div id="searchResult" class="search-result-box"></div>
         </div>
 
         <!-- UTILITY: Sincronizzazione e Caricamento File ICS -->
         <div class="card" style="border-top-color: #27ae60;">
             <h3>🔄 Importa Calendario (.ics)</h3>
-            <p style="font-size: 14px; color: #666; margin-top: 0;">Carica un file di esportazione del calendario per unire automaticamente i turni di tutto l'anno.</p>
+            <p style="font-size: 14px; color: #666; margin-top: 0;">Carica un file di esportazione del calendario per aggiungere nuovi turni di massa.</p>
             <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
                 <div style="flex: 1; min-width: 250px;">
                     <input type="file" id="icsFileInput" accept=".ics">
@@ -344,9 +339,7 @@
                                 <th>Azioni</th>
                             </tr>
                         </thead>
-                        <tbody id="tabellaTurni">
-                            <!-- Righe dinamiche -->
-                        </tbody>
+                        <tbody id="tabellaTurni"></tbody>
                     </table>
                 </div>
             </div>
@@ -354,8 +347,220 @@
     </div>
 
     <script>
-        // Database locale persistente
-        let turni = JSON.parse(localStorage.getItem('registro_completo_ally')) || [];
+        // RECUPERO CON STORICO REALE PRE-LOADED (Il tuo archivio protetto è qui dentro!)
+        let turni = JSON.parse(localStorage.getItem('registro_completo_ally'));
+
+        if (!turni || turni.length === 0) {
+            turni = [
+                {"data": "2024-02-12", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-05-07", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-01-31", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-09-04", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-01-20", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-11-04", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-08-06", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-02-26", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-12-14", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-10-09", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-11-02", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-06-24", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-03-29", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-11-01", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-03-20", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-06-04", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-08-29", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-03-24", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-11-06", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-04-04", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-01-12", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-07-05", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-05-08", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-09-12", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-10-07", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-10-15", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-11-14", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-07-06", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-04-14", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-04-10", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-10-15", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-07-04", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-03-27", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-06-12", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-04-02", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-03-08", "sede": "Planetwin365 via Marsala", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-03-11", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-04-28", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-03-30", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-03-05", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-04-13", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-05-19", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-02-17", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-03-04", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-12-29", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-12-20", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-02-14", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-05-12", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-03-03", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-03-15", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-10-09", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-07-07", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-01-18", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-06-12", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-02-06", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-05-15", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-07-10", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-04-08", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-12-02", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-07-06", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-08-14", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-07-07", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-03-26", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-01-06", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-03-11", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-06-27", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-10-18", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-02-04", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-12-24", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-03-12", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-11-04", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-10-08", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-04-05", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-08-05", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-02-02", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-03-06", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-10-12", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-04-18", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-03-01", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-02-03", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-06-11", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-08-31", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-11-15", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-04-09", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-10-30", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-10-21", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-02-03", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-03-10", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-02-09", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-04-15", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-05-11", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-01-26", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-06-14", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-12-07", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-05-01", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-01-30", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-07-16", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-12-02", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-03-31", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-09-01", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-11-10", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-11-17", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-11-22", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-04-16", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-12-04", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-11-19", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-11-16", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-04-02", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-11-13", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-06-16", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-01-24", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-01-02", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-05-10", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-10-17", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-12-09", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-03-16", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-04-01", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-05-25", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-09-20", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-09-12", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-10-15", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-02-21", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-08-19", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-12-26", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-05-03", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-12-01", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-09-14", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-12-29", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-09-21", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-10-02", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-04-04", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-06-22", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-10-04", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-10-18", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-02-15", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-04-11", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-01-05", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-06-26", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-05-02", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-08-17", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-12-17", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-03-18", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-06-29", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-08-30", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-06-30", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-03-25", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-05-26", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-07-22", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-11-03", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-04-23", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-10-12", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-07-15", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-02-13", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-07-04", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-06-21", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-02-19", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-05-27", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-08-23", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-01-07", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-04-19", "sede": "Planetwin365 via Marsala", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-01-02", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-08-11", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-06-09", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-05-21", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-02-18", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-10-24", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-12-03", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-03-31", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-04-30", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-12-20", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-12-08", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-11-02", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-02-23", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-05-18", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-01-29", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-08-02", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-03-07", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-11-14", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-03-14", "sede": "Planetwin365 via Marsala", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-01-09", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-09-30", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-01-21", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-04-21", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-08-16", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-10-12", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-05-30", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-08-01", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-01-19", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-09-17", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-09-27", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-07-31", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-11-27", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-05-07", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-12-06", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-01-22", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-10-09", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2026-06-27", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-04-25", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-01-13", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2024-02-14", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"},
+                {"data": "2025-09-03", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2024-08-24", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-08-17", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-08-08", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2025-10-03", "sede": "Goldbet stazione", "fascia": "Mattina", "inizio": "09:00", "fine": "15:00"},
+                {"data": "2026-11-11", "sede": "Goldbet stazione", "fascia": "Pomeriggio", "inizio": "15:00", "fine": "20:30"}
+            ];
+            localStorage.setItem('registro_completo_ally', JSON.stringify(turni));
+        }
 
         const mesiNomi = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
 
@@ -365,7 +570,6 @@
             
             turni.forEach(t => { if(t.data) periodiPresenti.add(t.data.substring(0, 7)); });
 
-            // Riempimento automatico fino a Dicembre 2026
             for(let anno = 2024; anno <= 2026; anno++) {
                 for(let mese = 1; mese <= 12; mese++) {
                     let mStr = mese < 10 ? '0' + mese : mese;
@@ -396,7 +600,6 @@
             const u = document.getElementById('username').value.trim().toLowerCase();
             const p = document.getElementById('password').value;
             
-            // Credenziali da inserire manualmente a schermo vuoto
             if(u === 'ally' && p === 'Monopoli1@') {
                 document.getElementById('loginPage').style.display = 'none';
                 document.getElementById('dashboardPage').style.display = 'block';
@@ -415,7 +618,6 @@
             document.getElementById('loginError').style.display = 'none';
         }
 
-        // FUNZIONE DI RICERCA DI UN GIORNO TOT SPECIFICO
         function cercaGiornoSpecifico() {
             const dataCercata = document.getElementById('searchDateInput').value;
             const resultBox = document.getElementById('searchResult');
@@ -425,9 +627,7 @@
                 return;
             }
 
-            // Cerca la corrispondenza esatta della data
             const turnoTrovato = turni.find(t => t.data === dataCercata);
-
             resultBox.style.display = "block";
             
             if(turnoTrovato) {
