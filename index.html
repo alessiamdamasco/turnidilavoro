@@ -960,309 +960,44 @@
         }
 
     </script>
+    <script>
+// Cancella tutti i dati salvati prima di importare un file
+function clearAllDataBeforeImport() {
+    // Cancella tutto il localStorage
+    localStorage.clear();
+
+    // Svuota eventuali array globali
+    if (window.turni && Array.isArray(window.turni)) {
+        window.turni.length = 0;
+    }
+    if (window.turniPlanet && Array.isArray(window.turniPlanet)) {
+        window.turniPlanet.length = 0;
+    }
+
+    console.log("Dati precedenti cancellati prima dell'importazione.");
+}
+
+// Gestione importazione JSON (pulsante Ripristina)
+document.getElementById("importFile").addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // 🔥 Cancella tutto PRIMA di importare
+    clearAllDataBeforeImport();
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = JSON.parse(e.target.result);
+
+        // Ripristino dati
+        localStorage.setItem("turni", JSON.stringify(data.turni || []));
+        localStorage.setItem("turniPlanet", JSON.stringify(data.turniPlanet || []));
+
+        // Aggiorna la pagina
+        location.reload();
+    };
+    reader.readAsText(file);
+});
+</script>
+
 </body>
-<!doctype html>
-<html lang="it">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Cancella tutti i turni — Strumento</title>
-  <style>
-    :root{--bg:#f6f8fb;--card:#fff;--muted:#6b7280;--accent:#0b74de;--danger:#d9534f}
-    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);margin:0;padding:20px;color:#111}
-    .wrap{max-width:980px;margin:0 auto}
-    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-    h1{font-size:18px;margin:0}
-    .controls{display:flex;gap:8px;align-items:center}
-    button{padding:8px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:var(--card);cursor:pointer}
-    .btn-danger{background:linear-gradient(180deg,#ff6b6b,#e04b4b);color:#fff;border:none}
-    .btn-primary{background:linear-gradient(180deg,#2b9cff,#0b74de);color:#fff;border:none}
-    .card{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 1px 3px rgba(16,24,40,0.05);margin-bottom:12px}
-    textarea{width:100%;min-height:160px;border:1px solid #e6e9ef;border-radius:6px;padding:10px;font-family:monospace}
-    select,input{padding:8px;border-radius:6px;border:1px solid #e6e9ef}
-    .muted{color:var(--muted);font-size:13px}
-    .row{display:flex;gap:8px;align-items:center;margin-top:8px}
-    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center}
-    .modal{background:#fff;padding:18px;border-radius:10px;max-width:520px;width:94%}
-    .small{font-size:13px;color:var(--muted)}
-    @media (max-width:720px){ header{flex-direction:column;align-items:flex-start;gap:8px} .row{flex-direction:column;align-items:stretch} }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <header>
-      <h1>Cancella tutti i turni</h1>
-      <div class="controls">
-        <button id="refreshBtn" class="btn-primary" title="Ricarica dati">Ricarica dati</button>
-        <button id="deleteAllBtn" class="btn-danger" title="Cancella tutti i turni">Cancella tutti i turni</button>
-      </div>
-    </header>
-
-    <section class="card">
-      <p class="muted"><strong>Nota:</strong> i dati vengono letti dalla chiave <strong>turni</strong> di <code>localStorage</code>. Prima di cancellare, fai sempre un backup copiando il contenuto.</p>
-
-      <div style="margin-top:10px;">
-        <label class="small"><strong>Dati correnti (backup)</strong></label>
-        <textarea id="dataPreview" readonly placeholder="Nessun dato trovato nella chiave 'turni'..."></textarea>
-        <div class="row" style="margin-top:8px;">
-          <button id="copyBackup" class="btn-primary">Copia backup negli appunti</button>
-          <button id="downloadBackup" class="btn-ghost" title="Mostra JSON per copia manuale">Mostra JSON</button>
-          <span id="status" class="small" style="margin-left:8px;color:#0b74de"></span>
-        </div>
-      </div>
-
-      <hr style="margin:14px 0;border:none;border-top:1px solid #eef2f7" />
-
-      <div>
-        <label class="small"><strong>Operazioni</strong></label>
-        <div class="row">
-          <button id="deleteAllMonthsBtn" class="btn-danger">Cancella tutti i mesi (tutti i turni)</button>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <select id="monthSelect"></select>
-            <button id="deleteMonthBtn" class="btn-danger">Cancella solo il mese selezionato</button>
-          </div>
-        </div>
-        <p class="small" style="margin-top:8px;color:#6b7280">Se i turni sono salvati come array, l'operazione "Cancella tutti i mesi" svuoterà l'array. Se sono salvati come oggetto per mese, verranno rimosse tutte le proprietà mese.</p>
-      </div>
-    </section>
-  </div>
-
-  <!-- Modal conferma -->
-  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal" role="document">
-      <h3 id="modalTitle">Conferma</h3>
-      <p id="modalMessage" class="muted">Sei sicuro?</p>
-      <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px">
-        <button id="modalCancel">Annulla</button>
-        <button id="modalConfirm" class="btn-danger">Conferma</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // Chiave usata per i turni
-    const STORAGE_KEY = 'turni';
-
-    // Elementi DOM
-    const dataPreview = document.getElementById('dataPreview');
-    const copyBackup = document.getElementById('copyBackup');
-    const downloadBackup = document.getElementById('downloadBackup');
-    const refreshBtn = document.getElementById('refreshBtn');
-    const deleteAllBtn = document.getElementById('deleteAllBtn');
-    const deleteAllMonthsBtn = document.getElementById('deleteAllMonthsBtn');
-    const monthSelect = document.getElementById('monthSelect');
-    const deleteMonthBtn = document.getElementById('deleteMonthBtn');
-    const status = document.getElementById('status');
-
-    const modalBackdrop = document.getElementById('modalBackdrop');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalMessage = document.getElementById('modalMessage');
-    const modalCancel = document.getElementById('modalCancel');
-    const modalConfirm = document.getElementById('modalConfirm');
-
-    // Carica dati da localStorage
-    function loadTurniRaw() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : null;
-      } catch (e) {
-        console.error('Errore parsing turni', e);
-        return null;
-      }
-    }
-
-    // Salva dati (sovrascrive)
-    function saveTurniRaw(obj) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
-      } catch (e) {
-        console.error('Errore salvataggio turni', e);
-      }
-    }
-
-    // Rimuovi chiave
-    function removeTurniKey() {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-
-    // Determina se i dati sono array o oggetto per mese
-    function analyzeStructure(data) {
-      if (Array.isArray(data)) return { type: 'array' };
-      if (data && typeof data === 'object') return { type: 'object' };
-      return { type: 'unknown' };
-    }
-
-    // Aggiorna preview e select mesi
-    function refreshUI() {
-      const data = loadTurniRaw();
-      if (!data) {
-        dataPreview.value = '';
-        dataPreview.placeholder = "Nessun dato trovato nella chiave 'turni'.";
-        monthSelect.innerHTML = '<option value="">-- nessun mese --</option>';
-        status.textContent = '';
-        return;
-      }
-      // pretty print
-      try {
-        dataPreview.value = JSON.stringify(data, null, 2);
-      } catch (e) {
-        dataPreview.value = String(data);
-      }
-
-      // popola select mesi se oggetto per mese o se array estrai mesi dalle date
-      const info = analyzeStructure(data);
-      const months = new Set();
-      if (info.type === 'object') {
-        Object.keys(data).forEach(k => months.add(k));
-      } else if (info.type === 'array') {
-        data.forEach(item => {
-          const d = item && (item.date || item.data || item.day);
-          if (d) {
-            // estrai YYYY-MM
-            const m = (new Date(d)).toISOString().slice(0,7);
-            if (m) months.add(m);
-          }
-        });
-      }
-      // ordina mesi discendente
-      const monthsArr = Array.from(months).sort((a,b)=> b.localeCompare(a));
-      if (monthsArr.length) {
-        monthSelect.innerHTML = monthsArr.map(m => `<option value="${m}">${m}</option>`).join('');
-      } else {
-        monthSelect.innerHTML = '<option value="">-- nessun mese rilevato --</option>';
-      }
-      status.textContent = `Struttura: ${info.type}`;
-    }
-
-    // Backup: copia negli appunti
-    copyBackup.addEventListener('click', async () => {
-      const txt = dataPreview.value || '';
-      if (!txt) { alert('Nessun dato da copiare.'); return; }
-      try {
-        await navigator.clipboard.writeText(txt);
-        alert('Backup copiato negli appunti.');
-      } catch (e) {
-        // fallback: seleziona textarea
-        dataPreview.select();
-        document.execCommand('copy');
-        alert('Backup copiato (metodo alternativo).');
-      }
-    });
-
-    // Mostra JSON in finestra (utile per copiare manualmente)
-    downloadBackup.addEventListener('click', () => {
-      if (!dataPreview.value) { alert('Nessun dato da mostrare.'); return; }
-      const w = window.open('', '_blank');
-      w.document.write('<pre>' + escapeHtml(dataPreview.value) + '</pre>');
-      w.document.title = 'Backup turni (visualizzazione)';
-    });
-
-    // Escape HTML per visualizzazione
-    function escapeHtml(s) {
-      return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
-
-    // Funzione: cancella tutti i mesi (tutti i turni)
-    function performDeleteAllMonths() {
-      const data = loadTurniRaw();
-      if (!data) {
-        // nulla da cancellare, ma rimuoviamo la chiave per sicurezza
-        removeTurniKey();
-        refreshUI();
-        return;
-      }
-      const info = analyzeStructure(data);
-      if (info.type === 'array') {
-        // svuota array
-        saveTurniRaw([]);
-      } else if (info.type === 'object') {
-        // rimuovi tutte le proprietà mese
-        removeTurniKey();
-      } else {
-        // tipo sconosciuto: rimuovi chiave
-        removeTurniKey();
-      }
-      refreshUI();
-    }
-
-    // Funzione: cancella solo il mese selezionato
-    function performDeleteMonth(month) {
-      const data = loadTurniRaw();
-      if (!data) return;
-      const info = analyzeStructure(data);
-      if (info.type === 'object') {
-        if (data.hasOwnProperty(month)) {
-          delete data[month];
-          saveTurniRaw(data);
-        }
-      } else if (info.type === 'array') {
-        // filtra gli elementi che non appartengono al mese selezionato
-        const filtered = data.filter(item => {
-          const d = item && (item.date || item.data || item.day);
-          if (!d) return true; // conserva se non ha data
-          const itemMonth = (new Date(d)).toISOString().slice(0,7);
-          return itemMonth !== month;
-        });
-        saveTurniRaw(filtered);
-      } else {
-        // tipo sconosciuto: non fare nulla
-      }
-      refreshUI();
-    }
-
-    // Modal helper
-    function openModal(title, message, onConfirm) {
-      modalTitle.textContent = title;
-      modalMessage.textContent = message;
-      modalBackdrop.style.display = 'flex';
-      modalBackdrop.setAttribute('aria-hidden','false');
-
-      function cleanup() {
-        modalBackdrop.style.display = 'none';
-        modalBackdrop.setAttribute('aria-hidden','true');
-        modalConfirm.removeEventListener('click', confirmHandler);
-        modalCancel.removeEventListener('click', cancelHandler);
-        document.removeEventListener('keydown', escHandler);
-      }
-      function confirmHandler() { try { onConfirm(); } finally { cleanup(); } }
-      function cancelHandler() { cleanup(); }
-      function escHandler(e) { if (e.key === 'Escape') cleanup(); }
-
-      modalConfirm.addEventListener('click', confirmHandler);
-      modalCancel.addEventListener('click', cancelHandler);
-      document.addEventListener('keydown', escHandler);
-    }
-
-    // Eventi bottoni
-    refreshBtn.addEventListener('click', refreshUI);
-
-    deleteAllBtn.addEventListener('click', () => {
-      openModal('Conferma cancellazione totale', 'Questa operazione cancellerà tutti i turni di tutti i mesi. Vuoi procedere?', () => {
-        performDeleteAllMonths();
-        alert('Tutti i turni sono stati cancellati.');
-      });
-    });
-
-    deleteAllMonthsBtn.addEventListener('click', () => {
-      openModal('Conferma cancellazione totale', 'Questa operazione cancellerà tutti i turni di tutti i mesi. Vuoi procedere?', () => {
-        performDeleteAllMonths();
-        alert('Tutti i turni sono stati cancellati.');
-      });
-    });
-
-    deleteMonthBtn.addEventListener('click', () => {
-      const month = monthSelect.value;
-      if (!month) { alert('Seleziona prima un mese valido.'); return; }
-      openModal('Conferma cancellazione mese', `Questa operazione cancellerà tutti i turni del mese ${month}. Vuoi procedere?`, () => {
-        performDeleteMonth(month);
-        alert(`Turni del mese ${month} cancellati.`);
-      });
-    });
-
-    // Inizializzazione
-    (function init(){
-      refreshUI();
-    })();
-  </script>
-</body>
-</html>
