@@ -966,198 +966,303 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Gestione Turni — Cancella Tutti</title>
+  <title>Cancella tutti i turni — Strumento</title>
   <style>
     :root{--bg:#f6f8fb;--card:#fff;--muted:#6b7280;--accent:#0b74de;--danger:#d9534f}
     body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);margin:0;padding:20px;color:#111}
-    .container{max-width:900px;margin:0 auto}
+    .wrap{max-width:980px;margin:0 auto}
     header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
     h1{font-size:18px;margin:0}
-    .controls{display:flex;gap:8px}
+    .controls{display:flex;gap:8px;align-items:center}
     button{padding:8px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:var(--card);cursor:pointer}
     .btn-danger{background:linear-gradient(180deg,#ff6b6b,#e04b4b);color:#fff;border:none}
     .btn-primary{background:linear-gradient(180deg,#2b9cff,#0b74de);color:#fff;border:none}
     .card{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 1px 3px rgba(16,24,40,0.05);margin-bottom:12px}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;border-bottom:1px solid #eef2f7;text-align:left;font-size:14px}
+    textarea{width:100%;min-height:160px;border:1px solid #e6e9ef;border-radius:6px;padding:10px;font-family:monospace}
+    select,input{padding:8px;border-radius:6px;border:1px solid #e6e9ef}
     .muted{color:var(--muted);font-size:13px}
-    .tag-planet{display:inline-block;padding:4px 8px;border-radius:999px;background:#fff0e6;color:#b85a00;border:1px solid #ffd9b3;font-size:12px}
-    .empty{padding:18px;text-align:center;color:var(--muted)}
+    .row{display:flex;gap:8px;align-items:center;margin-top:8px}
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center}
-    .modal{background:#fff;padding:18px;border-radius:10px;max-width:420px;width:92%}
-    @media (max-width:720px){ header{flex-direction:column;align-items:flex-start;gap:8px} }
+    .modal{background:#fff;padding:18px;border-radius:10px;max-width:520px;width:94%}
+    .small{font-size:13px;color:var(--muted)}
+    @media (max-width:720px){ header{flex-direction:column;align-items:flex-start;gap:8px} .row{flex-direction:column;align-items:stretch} }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="wrap">
     <header>
-      <h1>Gestione Turni</h1>
+      <h1>Cancella tutti i turni</h1>
       <div class="controls">
+        <button id="refreshBtn" class="btn-primary" title="Ricarica dati">Ricarica dati</button>
         <button id="deleteAllBtn" class="btn-danger" title="Cancella tutti i turni">Cancella tutti i turni</button>
-        <button id="addSampleBtn" class="btn-primary" title="Aggiungi dati di esempio">Aggiungi esempi</button>
       </div>
     </header>
 
     <section class="card">
-      <p class="muted" id="summary">Totale turni: 0 · Turni Planet: 0</p>
-      <div id="turnsContainer"></div>
+      <p class="muted"><strong>Nota:</strong> i dati vengono letti dalla chiave <strong>turni</strong> di <code>localStorage</code>. Prima di cancellare, fai sempre un backup copiando il contenuto.</p>
+
+      <div style="margin-top:10px;">
+        <label class="small"><strong>Dati correnti (backup)</strong></label>
+        <textarea id="dataPreview" readonly placeholder="Nessun dato trovato nella chiave 'turni'..."></textarea>
+        <div class="row" style="margin-top:8px;">
+          <button id="copyBackup" class="btn-primary">Copia backup negli appunti</button>
+          <button id="downloadBackup" class="btn-ghost" title="Mostra JSON per copia manuale">Mostra JSON</button>
+          <span id="status" class="small" style="margin-left:8px;color:#0b74de"></span>
+        </div>
+      </div>
+
+      <hr style="margin:14px 0;border:none;border-top:1px solid #eef2f7" />
+
+      <div>
+        <label class="small"><strong>Operazioni</strong></label>
+        <div class="row">
+          <button id="deleteAllMonthsBtn" class="btn-danger">Cancella tutti i mesi (tutti i turni)</button>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select id="monthSelect"></select>
+            <button id="deleteMonthBtn" class="btn-danger">Cancella solo il mese selezionato</button>
+          </div>
+        </div>
+        <p class="small" style="margin-top:8px;color:#6b7280">Se i turni sono salvati come array, l'operazione "Cancella tutti i mesi" svuoterà l'array. Se sono salvati come oggetto per mese, verranno rimosse tutte le proprietà mese.</p>
+      </div>
     </section>
   </div>
 
   <!-- Modal conferma -->
   <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="modal" role="document">
-      <h3>Conferma cancellazione</h3>
-      <p class="muted">Sei sicuro di voler cancellare <strong>tutti</strong> i turni? Operazione irreversibile.</p>
+      <h3 id="modalTitle">Conferma</h3>
+      <p id="modalMessage" class="muted">Sei sicuro?</p>
       <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px">
         <button id="modalCancel">Annulla</button>
-        <button id="modalConfirm" class="btn-danger">Sì, cancella tutto</button>
+        <button id="modalConfirm" class="btn-danger">Conferma</button>
       </div>
     </div>
   </div>
 
   <script>
-    /* Chiave localStorage */
+    // Chiave usata per i turni
     const STORAGE_KEY = 'turni';
 
-    /* Storage helpers */
-    function loadTurni() {
+    // Elementi DOM
+    const dataPreview = document.getElementById('dataPreview');
+    const copyBackup = document.getElementById('copyBackup');
+    const downloadBackup = document.getElementById('downloadBackup');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const deleteAllBtn = document.getElementById('deleteAllBtn');
+    const deleteAllMonthsBtn = document.getElementById('deleteAllMonthsBtn');
+    const monthSelect = document.getElementById('monthSelect');
+    const deleteMonthBtn = document.getElementById('deleteMonthBtn');
+    const status = document.getElementById('status');
+
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const modalCancel = document.getElementById('modalCancel');
+    const modalConfirm = document.getElementById('modalConfirm');
+
+    // Carica dati da localStorage
+    function loadTurniRaw() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
+        return raw ? JSON.parse(raw) : null;
       } catch (e) {
         console.error('Errore parsing turni', e);
-        return [];
+        return null;
       }
     }
 
-    function saveTurni(arr) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || []));
+    // Salva dati (sovrascrive)
+    function saveTurniRaw(obj) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+      } catch (e) {
+        console.error('Errore salvataggio turni', e);
+      }
     }
 
-    function clearAllTurniStorage() {
+    // Rimuovi chiave
+    function removeTurniKey() {
       localStorage.removeItem(STORAGE_KEY);
     }
 
-    /* Riconoscimento Planet (case-insensitive, tollerante a varianti) */
-    function isPlanetShift(shift) {
-      const place = (shift.place || shift.location || shift.sede || '').toString().trim().toLowerCase();
-      if (!place) return false;
-      if (place === 'planet') return true;
-      if (place.includes('planet')) return true;
-      const normalized = place.replace(/[^a-z0-9]/g, '');
-      return normalized === 'planet' || normalized.startsWith('planet');
+    // Determina se i dati sono array o oggetto per mese
+    function analyzeStructure(data) {
+      if (Array.isArray(data)) return { type: 'array' };
+      if (data && typeof data === 'object') return { type: 'object' };
+      return { type: 'unknown' };
     }
 
-    /* Rendering semplice della lista */
-    const turnsContainer = document.getElementById('turnsContainer');
-    const summaryEl = document.getElementById('summary');
-
-    function renderTurni() {
-      const arr = loadTurni();
-      const planetCount = arr.filter(isPlanetShift).length;
-      summaryEl.textContent = `Totale turni: ${arr.length} · Turni Planet: ${planetCount}`;
-
-      if (!arr.length) {
-        turnsContainer.innerHTML = '<div class="empty">Nessun turno registrato.</div>';
+    // Aggiorna preview e select mesi
+    function refreshUI() {
+      const data = loadTurniRaw();
+      if (!data) {
+        dataPreview.value = '';
+        dataPreview.placeholder = "Nessun dato trovato nella chiave 'turni'.";
+        monthSelect.innerHTML = '<option value="">-- nessun mese --</option>';
+        status.textContent = '';
         return;
       }
+      // pretty print
+      try {
+        dataPreview.value = JSON.stringify(data, null, 2);
+      } catch (e) {
+        dataPreview.value = String(data);
+      }
 
-      let html = '<table><thead><tr><th>Data</th><th>Orario</th><th>Luogo</th><th>Note</th><th></th></tr></thead><tbody>';
-      arr.forEach((t, idx) => {
-        const placeLabel = isPlanetShift(t) ? '<span class="tag-planet">Planet</span>' : (t.place || t.location || t.sede || '');
-        html += `<tr>
-          <td>${escapeHtml(t.date || '')}</td>
-          <td>${escapeHtml(t.start || '')} — ${escapeHtml(t.end || '')}</td>
-          <td>${placeLabel}</td>
-          <td>${escapeHtml(t.note || '')}</td>
-          <td><button data-idx="${idx}" class="btn-delete">Elimina</button></td>
-        </tr>`;
-      });
-      html += '</tbody></table>';
-      turnsContainer.innerHTML = html;
-
-      document.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const i = Number(e.currentTarget.dataset.idx);
-          deleteTurno(i);
+      // popola select mesi se oggetto per mese o se array estrai mesi dalle date
+      const info = analyzeStructure(data);
+      const months = new Set();
+      if (info.type === 'object') {
+        Object.keys(data).forEach(k => months.add(k));
+      } else if (info.type === 'array') {
+        data.forEach(item => {
+          const d = item && (item.date || item.data || item.day);
+          if (d) {
+            // estrai YYYY-MM
+            const m = (new Date(d)).toISOString().slice(0,7);
+            if (m) months.add(m);
+          }
         });
-      });
+      }
+      // ordina mesi discendente
+      const monthsArr = Array.from(months).sort((a,b)=> b.localeCompare(a));
+      if (monthsArr.length) {
+        monthSelect.innerHTML = monthsArr.map(m => `<option value="${m}">${m}</option>`).join('');
+      } else {
+        monthSelect.innerHTML = '<option value="">-- nessun mese rilevato --</option>';
+      }
+      status.textContent = `Struttura: ${info.type}`;
     }
 
-    function escapeHtml(s) {
-      if (!s) return '';
-      return s.toString().replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
-
-    /* Operazioni */
-    function deleteTurno(index) {
-      const arr = loadTurni();
-      if (index < 0 || index >= arr.length) return;
-      arr.splice(index, 1);
-      saveTurni(arr);
-      renderTurni();
-    }
-
-    function deleteAllTurni() {
-      clearAllTurniStorage();
-      if (window.turniArray && Array.isArray(window.turniArray)) window.turniArray.length = 0;
-      renderTurni();
-    }
-
-    /* Eventi UI */
-    document.addEventListener('DOMContentLoaded', () => {
-      const deleteAllBtn = document.getElementById('deleteAllBtn');
-      const modalBackdrop = document.getElementById('modalBackdrop');
-      const modalCancel = document.getElementById('modalCancel');
-      const modalConfirm = document.getElementById('modalConfirm');
-      const addSampleBtn = document.getElementById('addSampleBtn');
-
-      deleteAllBtn.addEventListener('click', () => {
-        modalBackdrop.style.display = 'flex';
-        modalBackdrop.setAttribute('aria-hidden', 'false');
-      });
-
-      modalCancel.addEventListener('click', () => {
-        modalBackdrop.style.display = 'none';
-        modalBackdrop.setAttribute('aria-hidden', 'true');
-      });
-
-      modalConfirm.addEventListener('click', () => {
-        try {
-          deleteAllTurni();
-          modalBackdrop.style.display = 'none';
-          modalBackdrop.setAttribute('aria-hidden', 'true');
-          alert('Tutti i turni sono stati cancellati.');
-        } catch (err) {
-          console.error('Errore cancellazione totale:', err);
-          alert('Errore durante la cancellazione. Controlla la console.');
-        }
-      });
-
-      addSampleBtn.addEventListener('click', () => {
-        const sample = [
-          { date: '2026-06-20', start: '09:00', end: '13:00', place: 'Planet', note: 'Mattina' },
-          { date: '2026-06-21', start: '14:00', end: '18:00', place: 'Sede Centrale', note: 'Pomeriggio' },
-          { date: '2026-06-22', start: '18:00', end: '22:00', place: 'planet store', note: 'Serale' },
-          { date: '2026-06-23', start: '08:00', end: '12:00', place: 'Supermercato', note: '' }
-        ];
-        saveTurni(sample);
-        renderTurni();
-        alert('Dati di esempio aggiunti.');
-      });
-
-      // chiudi modal con ESC
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          modalBackdrop.style.display = 'none';
-          modalBackdrop.setAttribute('aria-hidden', 'true');
-        }
-      });
-
-      renderTurni();
+    // Backup: copia negli appunti
+    copyBackup.addEventListener('click', async () => {
+      const txt = dataPreview.value || '';
+      if (!txt) { alert('Nessun dato da copiare.'); return; }
+      try {
+        await navigator.clipboard.writeText(txt);
+        alert('Backup copiato negli appunti.');
+      } catch (e) {
+        // fallback: seleziona textarea
+        dataPreview.select();
+        document.execCommand('copy');
+        alert('Backup copiato (metodo alternativo).');
+      }
     });
+
+    // Mostra JSON in finestra (utile per copiare manualmente)
+    downloadBackup.addEventListener('click', () => {
+      if (!dataPreview.value) { alert('Nessun dato da mostrare.'); return; }
+      const w = window.open('', '_blank');
+      w.document.write('<pre>' + escapeHtml(dataPreview.value) + '</pre>');
+      w.document.title = 'Backup turni (visualizzazione)';
+    });
+
+    // Escape HTML per visualizzazione
+    function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    // Funzione: cancella tutti i mesi (tutti i turni)
+    function performDeleteAllMonths() {
+      const data = loadTurniRaw();
+      if (!data) {
+        // nulla da cancellare, ma rimuoviamo la chiave per sicurezza
+        removeTurniKey();
+        refreshUI();
+        return;
+      }
+      const info = analyzeStructure(data);
+      if (info.type === 'array') {
+        // svuota array
+        saveTurniRaw([]);
+      } else if (info.type === 'object') {
+        // rimuovi tutte le proprietà mese
+        removeTurniKey();
+      } else {
+        // tipo sconosciuto: rimuovi chiave
+        removeTurniKey();
+      }
+      refreshUI();
+    }
+
+    // Funzione: cancella solo il mese selezionato
+    function performDeleteMonth(month) {
+      const data = loadTurniRaw();
+      if (!data) return;
+      const info = analyzeStructure(data);
+      if (info.type === 'object') {
+        if (data.hasOwnProperty(month)) {
+          delete data[month];
+          saveTurniRaw(data);
+        }
+      } else if (info.type === 'array') {
+        // filtra gli elementi che non appartengono al mese selezionato
+        const filtered = data.filter(item => {
+          const d = item && (item.date || item.data || item.day);
+          if (!d) return true; // conserva se non ha data
+          const itemMonth = (new Date(d)).toISOString().slice(0,7);
+          return itemMonth !== month;
+        });
+        saveTurniRaw(filtered);
+      } else {
+        // tipo sconosciuto: non fare nulla
+      }
+      refreshUI();
+    }
+
+    // Modal helper
+    function openModal(title, message, onConfirm) {
+      modalTitle.textContent = title;
+      modalMessage.textContent = message;
+      modalBackdrop.style.display = 'flex';
+      modalBackdrop.setAttribute('aria-hidden','false');
+
+      function cleanup() {
+        modalBackdrop.style.display = 'none';
+        modalBackdrop.setAttribute('aria-hidden','true');
+        modalConfirm.removeEventListener('click', confirmHandler);
+        modalCancel.removeEventListener('click', cancelHandler);
+        document.removeEventListener('keydown', escHandler);
+      }
+      function confirmHandler() { try { onConfirm(); } finally { cleanup(); } }
+      function cancelHandler() { cleanup(); }
+      function escHandler(e) { if (e.key === 'Escape') cleanup(); }
+
+      modalConfirm.addEventListener('click', confirmHandler);
+      modalCancel.addEventListener('click', cancelHandler);
+      document.addEventListener('keydown', escHandler);
+    }
+
+    // Eventi bottoni
+    refreshBtn.addEventListener('click', refreshUI);
+
+    deleteAllBtn.addEventListener('click', () => {
+      openModal('Conferma cancellazione totale', 'Questa operazione cancellerà tutti i turni di tutti i mesi. Vuoi procedere?', () => {
+        performDeleteAllMonths();
+        alert('Tutti i turni sono stati cancellati.');
+      });
+    });
+
+    deleteAllMonthsBtn.addEventListener('click', () => {
+      openModal('Conferma cancellazione totale', 'Questa operazione cancellerà tutti i turni di tutti i mesi. Vuoi procedere?', () => {
+        performDeleteAllMonths();
+        alert('Tutti i turni sono stati cancellati.');
+      });
+    });
+
+    deleteMonthBtn.addEventListener('click', () => {
+      const month = monthSelect.value;
+      if (!month) { alert('Seleziona prima un mese valido.'); return; }
+      openModal('Conferma cancellazione mese', `Questa operazione cancellerà tutti i turni del mese ${month}. Vuoi procedere?`, () => {
+        performDeleteMonth(month);
+        alert(`Turni del mese ${month} cancellati.`);
+      });
+    });
+
+    // Inizializzazione
+    (function init(){
+      refreshUI();
+    })();
   </script>
 </body>
 </html>
-
