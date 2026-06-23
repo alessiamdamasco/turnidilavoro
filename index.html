@@ -51,8 +51,14 @@
                 <i class="fa-solid fa-calendar-check text-lottoYellow text-3xl"></i>
                 <h1 class="text-2xl font-bold tracking-wide">Impegni Ally <span class="text-lottoYellow">💛</span></h1>
             </div>
-            <div class="text-sm font-medium">
-                Ciao Amo! <i class="fa-solid fa-sparkles text-lottoYellow"></i>
+            <div class="flex items-center gap-4 text-sm font-medium">
+                <div id="userGreeting">Ciao Amo! <i class="fa-solid fa-sparkles text-lottoYellow"></i></div>
+                <button id="loginGoogleBtn" class="bg-white text-lottoBlue px-3 py-1.5 rounded-full shadow hover:bg-gray-100 transition flex items-center gap-2">
+                    <i class="fa-brands fa-google text-red-500"></i> Connettiti
+                </button>
+                <button id="logoutBtn" class="hidden bg-red-500 text-white px-3 py-1.5 rounded-full shadow hover:bg-red-600 transition flex items-center gap-2">
+                    <i class="fa-solid fa-right-from-bracket"></i> Esci
+                </button>
             </div>
         </div>
     </header>
@@ -155,10 +161,10 @@
                 <div class="bg-blue-50 px-4 py-3 border-b border-blue-100 flex justify-between items-center">
                     <h2 class="font-bold text-lottoDark"><i class="fa-solid fa-list-check mr-2"></i> I tuoi Turni</h2>
                     <div class="flex gap-2">
-                        <label class="cursor-pointer text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 transition" title="Importa file .ICS o .CSV">
-                            <i class="fa-solid fa-file-import"></i> Importa
-                            <input type="file" id="importFileInput" accept=".ics,.csv" class="hidden">
-                        </label>
+                        <input type="file" id="fileImport" accept=".ics,.csv" class="hidden">
+                        <button onclick="document.getElementById('fileImport').click()" class="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 transition" title="Importa file .ICS o .CSV">
+                            <i class="fa-solid fa-upload"></i> Importa
+                        </button>
                         <button onclick="exportICS()" class="text-xs bg-lottoBlue text-white px-2 py-1 rounded hover:bg-lottoDark transition" title="Esporta per Google Calendar">
                             <i class="fa-solid fa-calendar-arrow-down"></i> .ICS
                         </button>
@@ -232,7 +238,7 @@
     <!-- Firebase e Logica App -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Configurazione Iniziale Firebase (MANDATORY RULES APPLIED) ---
@@ -268,6 +274,33 @@
         let commitmentsData = [];
         let baseSalary = 0;
 
+        // --- Elementi UI Auth ---
+        const loginGoogleBtn = document.getElementById('loginGoogleBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userGreeting = document.getElementById('userGreeting');
+
+        loginGoogleBtn.addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+                showToast("Connesso con Google con successo! 💛");
+            } catch (error) {
+                console.error("Errore login Google:", error);
+                showToast("Errore durante la connessione a Google.", 'error');
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                // Dopo il logout, torna anonimo per mantenere l'app funzionante
+                await signInAnonymously(auth); 
+                showToast("Disconnesso. Sei in modalità anonima.");
+            } catch (error) {
+                console.error("Errore logout:", error);
+            }
+        });
+
         // --- Autenticazione ---
         const initAuth = async () => {
             try {
@@ -286,6 +319,19 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserId = user.uid;
+                
+                // Aggiorna UI Login
+                if (user.isAnonymous) {
+                    loginGoogleBtn.classList.remove('hidden');
+                    logoutBtn.classList.add('hidden');
+                    userGreeting.innerHTML = `Ciao Amo! <i class="fa-solid fa-sparkles text-lottoYellow"></i>`;
+                } else {
+                    loginGoogleBtn.classList.add('hidden');
+                    logoutBtn.classList.remove('hidden');
+                    const nome = user.displayName ? user.displayName.split(' ')[0] : 'Ally';
+                    userGreeting.innerHTML = `Ciao ${nome}! <i class="fa-solid fa-check-circle text-green-400"></i>`;
+                }
+
                 loadData();
             } else {
                 currentUserId = null;
@@ -326,9 +372,6 @@
         const baseSalaryInput = document.getElementById('baseSalaryInput');
         const displayTotExtra = document.getElementById('displayTotExtra');
         const displayTotSalary = document.getElementById('displayTotSalary');
-
-        // Elemento Input File per Importazione
-        const importFileInput = document.getElementById('importFileInput');
 
         // Mostra/Nascondi input importo extra
         shiftIsExtraCheckbox.addEventListener('change', (e) => {
@@ -752,139 +795,6 @@
             downloadFile(csv, 'Turni_Ally.csv', 'text/csv');
         };
 
-        // --- Importazione CSV e ICS ---
-        importFileInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            if (!currentUserId) {
-                showToast("Devi essere connessa per importare!", "error");
-                importFileInput.value = '';
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                const content = event.target.result;
-                let parsedShifts = [];
-
-                try {
-                    if (file.name.endsWith('.csv')) {
-                        parsedShifts = parseCSV(content);
-                    } else if (file.name.endsWith('.ics')) {
-                        parsedShifts = parseICS(content);
-                    } else {
-                        showToast("Formato non supportato. Usa .csv o .ics", "error");
-                        return;
-                    }
-
-                    if (parsedShifts.length === 0) {
-                        showToast("Nessun turno valido trovato nel file.", "error");
-                        return;
-                    }
-
-                    showToast(`Trovati ${parsedShifts.length} turni. Importazione in corso...`);
-
-                    const colRef = collection(db, 'artifacts', appId, 'users', currentUserId, 'shifts');
-                    let added = 0;
-                    
-                    for (const shift of parsedShifts) {
-                        // Verifica base per evitare duplicati esatti nello stesso giorno
-                        const exists = shiftsData.find(s => s.date === shift.date && s.type === shift.type);
-                        if (!exists) {
-                            await addDoc(colRef, shift);
-                            added++;
-                        }
-                    }
-
-                    if(added > 0) {
-                        showToast(`Importazione completata! Aggiunti ${added} nuovi turni. 💛`, "success");
-                    } else {
-                        showToast(`I turni nel file erano già stati inseriti!`, "success");
-                    }
-
-                } catch (err) {
-                    console.error(err);
-                    showToast("Errore durante la lettura del file.", "error");
-                } finally {
-                    importFileInput.value = ''; // Reset input
-                }
-            };
-            reader.readAsText(file);
-        });
-
-        function parseCSV(content) {
-            const lines = content.split('\n');
-            const shifts = [];
-            for (let i = 1; i < lines.length; i++) { // Salta l'intestazione
-                const line = lines[i].trim();
-                if (!line) continue;
-                
-                const parts = line.split(',');
-                if (parts.length >= 5) {
-                    // Converte DD/MM/YYYY in YYYY-MM-DD per il nostro sistema
-                    const dateParts = parts[0].split('/');
-                    let formattedDate = parts[0];
-                    if (dateParts.length === 3) {
-                        formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
-                    }
-
-                    shifts.push({
-                        date: formattedDate,
-                        location: parts[1],
-                        type: parts[2],
-                        isExtra: parts[3].toLowerCase() === 'si',
-                        extraAmount: parseFloat(parts[4]) || 0
-                    });
-                }
-            }
-            return shifts;
-        }
-
-        function parseICS(content) {
-            const lines = content.split('\n');
-            const shifts = [];
-            let inEvent = false;
-            let currentShift = {};
-
-            lines.forEach(line => {
-                line = line.trim();
-                if (line === 'BEGIN:VEVENT') {
-                    inEvent = true;
-                    currentShift = { isExtra: false, extraAmount: 0, location: 'Nessuna (Malattia)' };
-                } else if (line === 'END:VEVENT' && inEvent) {
-                    if (currentShift.date && currentShift.type) {
-                        shifts.push({ ...currentShift });
-                    }
-                    inEvent = false;
-                } else if (inEvent) {
-                    // Cattura la data dal formato ICS
-                    if (line.startsWith('DTSTART')) {
-                        const match = line.match(/:(\d{4})(\d{2})(\d{2})/);
-                        if (match) {
-                            currentShift.date = `${match[1]}-${match[2]}-${match[3]}`;
-                        }
-                    } else if (line.startsWith('SUMMARY')) {
-                        if (line.includes('Mattina')) currentShift.type = 'Mattina';
-                        else if (line.includes('Pomeriggio')) currentShift.type = 'Pomeriggio';
-                        else if (line.includes('Malattia')) currentShift.type = 'Malattia';
-                    } else if (line.startsWith('LOCATION')) {
-                        currentShift.location = line.substring(9).trim();
-                    } else if (line.startsWith('DESCRIPTION')) {
-                        if (line.includes('Extra')) {
-                            currentShift.isExtra = true;
-                            // Cerca un importo numerico nella descrizione
-                            const amountMatch = line.match(/Importo:\s*([\d.]+)/);
-                            if (amountMatch) {
-                                currentShift.extraAmount = parseFloat(amountMatch[1]);
-                            }
-                        }
-                    }
-                }
-            });
-            return shifts;
-        }
-
         function downloadFile(content, fileName, mimeType) {
             const blob = new Blob([content], { type: mimeType });
             const url = URL.createObjectURL(blob);
@@ -896,6 +806,101 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             showToast(`File ${fileName} scaricato!`, "success");
+        }
+
+        // --- Importazione File (ICS / CSV) ---
+        document.getElementById('fileImport').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const content = event.target.result;
+                if (file.name.toLowerCase().endsWith('.ics')) {
+                    await parseICS(content);
+                } else if (file.name.toLowerCase().endsWith('.csv')) {
+                    await parseCSV(content);
+                } else {
+                    showToast("Amo, formato non supportato! Usa .ics o .csv", "error");
+                }
+                // Resetta l'input per permettere di ricaricare lo stesso file
+                e.target.value = ''; 
+            };
+            reader.readAsText(file);
+        });
+
+        async function parseICS(content) {
+            const events = content.split('BEGIN:VEVENT');
+            let importedCount = 0;
+            if(!currentUserId) return showToast("Devi essere connessa per importare!", "error");
+
+            for (let i = 1; i < events.length; i++) {
+                const event = events[i];
+                // Trova data (formato base YYYYMMDD)
+                const dtstartMatch = event.match(/DTSTART(?:;.*?)?:(\d{4})(\d{2})(\d{2})/);
+                if (!dtstartMatch) continue;
+                const date = `${dtstartMatch[1]}-${dtstartMatch[2]}-${dtstartMatch[3]}`;
+
+                // Trova summary
+                const summaryMatch = event.match(/SUMMARY:(.*)/);
+                const summary = summaryMatch ? summaryMatch[1].trim().toLowerCase() : '';
+
+                let type = 'Mattina';
+                if (summary.includes('pomeriggio')) type = 'Pomeriggio';
+                else if (summary.includes('malattia')) type = 'Malattia';
+
+                // Trova location
+                const locMatch = event.match(/LOCATION:(.*)/);
+                const location = locMatch ? locMatch[1].trim() : 'Goldbet Stazione';
+
+                // Determina se è extra dalla description
+                const descMatch = event.match(/DESCRIPTION:(.*)/);
+                const desc = descMatch ? descMatch[1].trim().toLowerCase() : '';
+                const isExtra = desc.includes('extra');
+                
+                // Estrai importo extra se presente (es. "Importo: 15 EUR")
+                let extraAmount = 0;
+                if (isExtra) {
+                    const amountMatch = desc.match(/importo:\s*([\d.]+)/);
+                    if (amountMatch) extraAmount = parseFloat(amountMatch[1]);
+                }
+
+                const shiftObj = { date, location, type, isExtra, extraAmount };
+                await addDoc(collection(db, 'artifacts', appId, 'users', currentUserId, 'shifts'), shiftObj);
+                importedCount++;
+            }
+            if(importedCount > 0) {
+                showToast(`Importati ${importedCount} turni dal calendario! Bravissima! 💛`);
+            } else {
+                showToast(`Nessun turno trovato nel file!`, "error");
+            }
+        }
+
+        async function parseCSV(content) {
+            const lines = content.split('\n');
+            let importedCount = 0;
+            if(!currentUserId) return showToast("Devi essere connessa per importare!", "error");
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const cols = lines[i].split(',');
+                if (cols.length >= 3) {
+                    // Supponiamo formato: Data(DD/MM/YYYY), Sede, Tipo, Extra, Importo
+                    const dateParts = cols[0].trim().split('/');
+                    if (dateParts.length === 3) {
+                        const date = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+                        const location = cols[1] ? cols[1].trim() : 'Goldbet Stazione';
+                        const type = cols[2] ? cols[2].trim() : 'Mattina';
+                        const isExtra = cols[3] && cols[3].trim().toLowerCase() === 'si';
+                        const extraAmount = cols[4] ? parseFloat(cols[4]) || 0 : 0;
+
+                        const shiftObj = { date, location, type, isExtra, extraAmount };
+                        await addDoc(collection(db, 'artifacts', appId, 'users', currentUserId, 'shifts'), shiftObj);
+                        importedCount++;
+                    }
+                }
+            }
+            showToast(`Importati ${importedCount} turni dal CSV!`);
         }
 
         // --- Utility Toast ---
