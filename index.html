@@ -961,8 +961,203 @@
 
     </script>
 </body>
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gestione Turni — Cancella Tutti</title>
+  <style>
+    :root{--bg:#f6f8fb;--card:#fff;--muted:#6b7280;--accent:#0b74de;--danger:#d9534f}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);margin:0;padding:20px;color:#111}
+    .container{max-width:900px;margin:0 auto}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    h1{font-size:18px;margin:0}
+    .controls{display:flex;gap:8px}
+    button{padding:8px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:var(--card);cursor:pointer}
+    .btn-danger{background:linear-gradient(180deg,#ff6b6b,#e04b4b);color:#fff;border:none}
+    .btn-primary{background:linear-gradient(180deg,#2b9cff,#0b74de);color:#fff;border:none}
+    .card{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 1px 3px rgba(16,24,40,0.05);margin-bottom:12px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #eef2f7;text-align:left;font-size:14px}
+    .muted{color:var(--muted);font-size:13px}
+    .tag-planet{display:inline-block;padding:4px 8px;border-radius:999px;background:#fff0e6;color:#b85a00;border:1px solid #ffd9b3;font-size:12px}
+    .empty{padding:18px;text-align:center;color:var(--muted)}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center}
+    .modal{background:#fff;padding:18px;border-radius:10px;max-width:420px;width:92%}
+    @media (max-width:720px){ header{flex-direction:column;align-items:flex-start;gap:8px} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Gestione Turni</h1>
+      <div class="controls">
+        <button id="deleteAllBtn" class="btn-danger" title="Cancella tutti i turni">Cancella tutti i turni</button>
+        <button id="addSampleBtn" class="btn-primary" title="Aggiungi dati di esempio">Aggiungi esempi</button>
+      </div>
+    </header>
+
+    <section class="card">
+      <p class="muted" id="summary">Totale turni: 0 · Turni Planet: 0</p>
+      <div id="turnsContainer"></div>
+    </section>
+  </div>
+
+  <!-- Modal conferma -->
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document">
+      <h3>Conferma cancellazione</h3>
+      <p class="muted">Sei sicuro di voler cancellare <strong>tutti</strong> i turni? Operazione irreversibile.</p>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px">
+        <button id="modalCancel">Annulla</button>
+        <button id="modalConfirm" class="btn-danger">Sì, cancella tutto</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* Chiave localStorage */
+    const STORAGE_KEY = 'turni';
+
+    /* Storage helpers */
+    function loadTurni() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        console.error('Errore parsing turni', e);
+        return [];
+      }
+    }
+
+    function saveTurni(arr) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || []));
+    }
+
+    function clearAllTurniStorage() {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+
+    /* Riconoscimento Planet (case-insensitive, tollerante a varianti) */
+    function isPlanetShift(shift) {
+      const place = (shift.place || shift.location || shift.sede || '').toString().trim().toLowerCase();
+      if (!place) return false;
+      if (place === 'planet') return true;
+      if (place.includes('planet')) return true;
+      const normalized = place.replace(/[^a-z0-9]/g, '');
+      return normalized === 'planet' || normalized.startsWith('planet');
+    }
+
+    /* Rendering semplice della lista */
+    const turnsContainer = document.getElementById('turnsContainer');
+    const summaryEl = document.getElementById('summary');
+
+    function renderTurni() {
+      const arr = loadTurni();
+      const planetCount = arr.filter(isPlanetShift).length;
+      summaryEl.textContent = `Totale turni: ${arr.length} · Turni Planet: ${planetCount}`;
+
+      if (!arr.length) {
+        turnsContainer.innerHTML = '<div class="empty">Nessun turno registrato.</div>';
+        return;
+      }
+
+      let html = '<table><thead><tr><th>Data</th><th>Orario</th><th>Luogo</th><th>Note</th><th></th></tr></thead><tbody>';
+      arr.forEach((t, idx) => {
+        const placeLabel = isPlanetShift(t) ? '<span class="tag-planet">Planet</span>' : (t.place || t.location || t.sede || '');
+        html += `<tr>
+          <td>${escapeHtml(t.date || '')}</td>
+          <td>${escapeHtml(t.start || '')} — ${escapeHtml(t.end || '')}</td>
+          <td>${placeLabel}</td>
+          <td>${escapeHtml(t.note || '')}</td>
+          <td><button data-idx="${idx}" class="btn-delete">Elimina</button></td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      turnsContainer.innerHTML = html;
+
+      document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const i = Number(e.currentTarget.dataset.idx);
+          deleteTurno(i);
+        });
+      });
+    }
+
+    function escapeHtml(s) {
+      if (!s) return '';
+      return s.toString().replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    /* Operazioni */
+    function deleteTurno(index) {
+      const arr = loadTurni();
+      if (index < 0 || index >= arr.length) return;
+      arr.splice(index, 1);
+      saveTurni(arr);
+      renderTurni();
+    }
+
+    function deleteAllTurni() {
+      clearAllTurniStorage();
+      if (window.turniArray && Array.isArray(window.turniArray)) window.turniArray.length = 0;
+      renderTurni();
+    }
+
+    /* Eventi UI */
+    document.addEventListener('DOMContentLoaded', () => {
+      const deleteAllBtn = document.getElementById('deleteAllBtn');
+      const modalBackdrop = document.getElementById('modalBackdrop');
+      const modalCancel = document.getElementById('modalCancel');
+      const modalConfirm = document.getElementById('modalConfirm');
+      const addSampleBtn = document.getElementById('addSampleBtn');
+
+      deleteAllBtn.addEventListener('click', () => {
+        modalBackdrop.style.display = 'flex';
+        modalBackdrop.setAttribute('aria-hidden', 'false');
+      });
+
+      modalCancel.addEventListener('click', () => {
+        modalBackdrop.style.display = 'none';
+        modalBackdrop.setAttribute('aria-hidden', 'true');
+      });
+
+      modalConfirm.addEventListener('click', () => {
+        try {
+          deleteAllTurni();
+          modalBackdrop.style.display = 'none';
+          modalBackdrop.setAttribute('aria-hidden', 'true');
+          alert('Tutti i turni sono stati cancellati.');
+        } catch (err) {
+          console.error('Errore cancellazione totale:', err);
+          alert('Errore durante la cancellazione. Controlla la console.');
+        }
+      });
+
+      addSampleBtn.addEventListener('click', () => {
+        const sample = [
+          { date: '2026-06-20', start: '09:00', end: '13:00', place: 'Planet', note: 'Mattina' },
+          { date: '2026-06-21', start: '14:00', end: '18:00', place: 'Sede Centrale', note: 'Pomeriggio' },
+          { date: '2026-06-22', start: '18:00', end: '22:00', place: 'planet store', note: 'Serale' },
+          { date: '2026-06-23', start: '08:00', end: '12:00', place: 'Supermercato', note: '' }
+        ];
+        saveTurni(sample);
+        renderTurni();
+        alert('Dati di esempio aggiunti.');
+      });
+
+      // chiudi modal con ESC
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          modalBackdrop.style.display = 'none';
+          modalBackdrop.setAttribute('aria-hidden', 'true');
+        }
+      });
+
+      renderTurni();
+    });
+  </script>
+</body>
 </html>
-<!-- Pulsante per cancellare tutti i turni -->
-<button id="deleteAllTurnsBtn" class="btn btn-danger" title="Cancella tutti i turni">
-  Cancella tutti i turni
-</button>
+
