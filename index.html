@@ -159,24 +159,33 @@
         <!-- Middle Column: Shift List -->
         <div class="lg:col-span-5 flex flex-col space-y-4">
             <div class="bg-white rounded-xl shadow-lg flex-grow flex flex-col border-t-4 border-lottoBlue overflow-hidden">
-                <div class="bg-blue-50 px-4 py-3 border-b border-blue-100 flex justify-between items-center">
+                <div class="bg-blue-50 px-4 py-3 border-b border-blue-100 flex justify-between items-center flex-wrap gap-3">
                     <h2 class="font-bold text-lottoDark"><i class="fa-solid fa-list-check mr-2"></i> I tuoi Turni</h2>
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 flex-wrap">
+                        <!-- Filtri Mese/Anno -->
+                        <select id="monthFilter" class="text-xs p-1.5 border border-gray-300 rounded bg-white">
+                            <option value="">Tutti i mesi</option>
+                        </select>
+                        <select id="yearFilter" class="text-xs p-1.5 border border-gray-300 rounded bg-white">
+                            <option value="">Tutti gli anni</option>
+                        </select>
+                        
+                        <!-- Pulsanti Export -->
                         <input type="file" id="fileImport" accept=".ics,.csv" class="hidden">
                         <button onclick="document.getElementById('fileImport').click()" class="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 transition" title="Importa file">
-                            <i class="fa-solid fa-upload"></i> Importa
+                            <i class="fa-solid fa-upload"></i>
                         </button>
-                        <button onclick="exportICS()" class="text-xs bg-lottoBlue text-white px-2 py-1 rounded hover:bg-lottoDark transition" title="Esporta per Google Calendar">
-                            <i class="fa-solid fa-calendar-arrow-down"></i> .ICS
+                        <button onclick="exportICS()" class="text-xs bg-lottoBlue text-white px-2 py-1 rounded hover:bg-lottoDark transition" title="Esporta .ICS">
+                            <i class="fa-solid fa-calendar-arrow-down"></i>
                         </button>
-                        <button onclick="exportCSV()" class="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transition" title="Esporta in Excel/CSV">
-                            <i class="fa-solid fa-file-csv"></i> .CSV
+                        <button onclick="exportCSV()" class="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transition" title="Esporta .CSV">
+                            <i class="fa-solid fa-file-csv"></i>
                         </button>
                     </div>
                 </div>
                 
                 <div class="p-4 flex-grow overflow-y-auto" style="max-height: 600px;">
-                    <div id="shiftsContainer" class="space-y-3">
+                    <div id="shiftsContainer" class="space-y-4">
                         <div class="text-center text-gray-400 py-10 italic">
                             Caricamento turni in corso...
                         </div>
@@ -268,6 +277,9 @@
         const displayTotExtra = document.getElementById('displayTotExtra');
         const displayTotSalary = document.getElementById('displayTotSalary');
 
+        const monthFilter = document.getElementById('monthFilter');
+        const yearFilter = document.getElementById('yearFilter');
+
         // --- LocalStorage Functions ---
         function saveToStorage() {
             localStorage.setItem('shiftsData', JSON.stringify(shiftsData));
@@ -284,6 +296,7 @@
                 baseSalaryInput.value = baseSalary;
             }
             
+            updateFilters();
             renderShifts();
             renderCommitments();
             calculateTotals();
@@ -293,6 +306,64 @@
             return '_' + Math.random().toString(36).substr(2, 9);
         }
 
+        // Mesi italiani
+        const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 
+                          'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+
+        // Aggiorna i filtri mese/anno
+        function updateFilters() {
+            const months = new Set();
+            const years = new Set();
+
+            shiftsData.forEach(s => {
+                const date = new Date(s.date);
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                months.add(`${year}-${month}`);
+                years.add(year.toString());
+            });
+
+            // Popola i mesi
+            monthFilter.innerHTML = '<option value="">Tutti i mesi</option>';
+            Array.from(months).sort().reverse().forEach(monthYear => {
+                const [year, month] = monthYear.split('-');
+                const option = document.createElement('option');
+                option.value = monthYear;
+                option.textContent = `${monthNames[parseInt(month)]} ${year}`;
+                monthFilter.appendChild(option);
+            });
+
+            // Popola gli anni
+            yearFilter.innerHTML = '<option value="">Tutti gli anni</option>';
+            Array.from(years).sort().reverse().forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearFilter.appendChild(option);
+            });
+        }
+
+        // Filtra turni per mese/anno
+        function getFilteredShifts() {
+            let filtered = shiftsData;
+
+            if (monthFilter.value) {
+                const [year, month] = monthFilter.value.split('-');
+                filtered = filtered.filter(s => {
+                    const date = new Date(s.date);
+                    return date.getFullYear() === parseInt(year) && date.getMonth() === parseInt(month);
+                });
+            } else if (yearFilter.value) {
+                const year = parseInt(yearFilter.value);
+                filtered = filtered.filter(s => {
+                    const date = new Date(s.date);
+                    return date.getFullYear() === year;
+                });
+            }
+
+            return filtered;
+        }
+
         // --- Init ---
         window.addEventListener('load', () => {
             loadFromStorage();
@@ -300,6 +371,17 @@
 
         // --- Event Listeners ---
         
+        // Listener per i filtri
+        monthFilter.addEventListener('change', () => {
+            yearFilter.value = '';
+            renderShifts();
+        });
+
+        yearFilter.addEventListener('change', () => {
+            monthFilter.value = '';
+            renderShifts();
+        });
+
         // Mostra/Nascondi input importo extra
         shiftIsExtraCheckbox.addEventListener('change', (e) => {
             if (e.target.checked) {
@@ -356,6 +438,7 @@
 
             shiftsData.sort((a, b) => new Date(a.date) - new Date(b.date));
             saveToStorage();
+            updateFilters();
             renderShifts();
             calculateTotals();
             resetShiftForm();
@@ -410,6 +493,7 @@
         window.deleteShift = (id) => {
             shiftsData = shiftsData.filter(s => s.id !== id);
             saveToStorage();
+            updateFilters();
             renderShifts();
             calculateTotals();
             showToast("Turno eliminato.", "success");
@@ -503,57 +587,88 @@
 
         // --- Rendering ---
         function renderShifts() {
-            if (shiftsData.length === 0) {
-                shiftsContainer.innerHTML = '<div class="text-center text-gray-500 py-6">Nessun turno inserito. Inizia ad aggiungerli!</div>';
+            const filteredData = getFilteredShifts();
+            
+            if (filteredData.length === 0) {
+                shiftsContainer.innerHTML = '<div class="text-center text-gray-500 py-6">Nessun turno per questo periodo.</div>';
                 return;
             }
 
-            let html = '';
-            shiftsData.forEach(s => {
-                const dateObj = new Date(s.date);
-                const dateStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            // Raggruppa per mese/anno
+            const grouped = {};
+            filteredData.forEach(s => {
+                const date = new Date(s.date);
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const key = `${year}-${month}`;
                 
-                let icon = '';
-                let colorClass = '';
-                let timeStr = '';
-                
-                if (s.type === 'Malattia') {
-                    icon = 'fa-bed text-red-500';
-                    colorClass = 'border-red-400 bg-red-50';
-                    timeStr = 'Intera Giornata';
-                } else if (s.type === 'Mattina') {
-                    icon = 'fa-sun text-yellow-500';
-                    colorClass = 'border-yellow-300 bg-white';
-                    timeStr = '09:00 - 13:30';
-                } else {
-                    icon = 'fa-moon text-blue-500';
-                    colorClass = 'border-blue-300 bg-white';
-                    timeStr = '15:00 - 20:30';
+                if (!grouped[key]) {
+                    grouped[key] = { year, month, shifts: [] };
                 }
-
-                const extraBadge = s.isExtra ? `<span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-semibold ml-2"><i class="fa-solid fa-euro-sign"></i> Extra €${s.extraAmount.toFixed(2)}</span>` : '';
-
-                html += `
-                <div class="p-3 border-l-4 ${colorClass} rounded shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 fade-in">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold text-gray-800">${dateStr}</span>
-                            ${extraBadge}
-                        </div>
-                        <div class="text-sm text-gray-600 mt-1">
-                            <i class="fa-solid ${icon} w-5 text-center"></i> 
-                            <span class="font-medium">${s.type}</span> 
-                            ${s.type !== 'Malattia' ? `presso <b>${s.location}</b>` : ''}
-                        </div>
-                        <div class="text-xs text-gray-500 mt-1"><i class="fa-regular fa-clock"></i> ${timeStr}</div>
-                    </div>
-                    <div class="flex gap-2 w-full sm:w-auto justify-end mt-2 sm:mt-0">
-                        <button onclick="editShift('${s.id}')" class="text-blue-500 hover:bg-blue-100 p-2 rounded transition" title="Modifica"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="deleteShift('${s.id}')" class="text-red-500 hover:bg-red-100 p-2 rounded transition" title="Elimina"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                </div>
-                `;
+                grouped[key].shifts.push(s);
             });
+
+            let html = '';
+            
+            // Ordina i mesi in ordine decrescente
+            Object.keys(grouped).sort().reverse().forEach(key => {
+                const group = grouped[key];
+                const monthYear = `${monthNames[group.month]} ${group.year}`;
+                
+                html += `<div class="mb-6">
+                    <h3 class="font-bold text-lg text-lottoBlue mb-3">📅 ${monthYear}</h3>
+                    <div class="space-y-2">`;
+
+                group.shifts.forEach(s => {
+                    const dateObj = new Date(s.date);
+                    const dateStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const dayName = dateObj.toLocaleDateString('it-IT', { weekday: 'short' });
+                    
+                    let icon = '';
+                    let colorClass = '';
+                    let timeStr = '';
+                    
+                    if (s.type === 'Malattia') {
+                        icon = 'fa-bed text-red-500';
+                        colorClass = 'border-red-400 bg-red-50';
+                        timeStr = 'Intera Giornata';
+                    } else if (s.type === 'Mattina') {
+                        icon = 'fa-sun text-yellow-500';
+                        colorClass = 'border-yellow-300 bg-white';
+                        timeStr = '09:00 - 13:30';
+                    } else {
+                        icon = 'fa-moon text-blue-500';
+                        colorClass = 'border-blue-300 bg-white';
+                        timeStr = '15:00 - 20:30';
+                    }
+
+                    const extraBadge = s.isExtra ? `<span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-semibold ml-2"><i class="fa-solid fa-euro-sign"></i> €${s.extraAmount.toFixed(2)}</span>` : '';
+
+                    html += `
+                    <div class="p-3 border-l-4 ${colorClass} rounded shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 fade-in">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-gray-800">${dateStr} <span class="text-sm text-gray-500">${dayName}</span></span>
+                                ${extraBadge}
+                            </div>
+                            <div class="text-sm text-gray-600 mt-1">
+                                <i class="fa-solid ${icon} w-5 text-center"></i> 
+                                <span class="font-medium">${s.type}</span> 
+                                ${s.type !== 'Malattia' ? `presso <b>${s.location}</b>` : ''}
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1"><i class="fa-regular fa-clock"></i> ${timeStr}</div>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto justify-end mt-2 sm:mt-0">
+                            <button onclick="editShift('${s.id}')" class="text-blue-500 hover:bg-blue-100 p-2 rounded transition" title="Modifica"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteShift('${s.id}')" class="text-red-500 hover:bg-red-100 p-2 rounded transition" title="Elimina"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                    `;
+                });
+
+                html += `</div></div>`;
+            });
+
             shiftsContainer.innerHTML = html;
         }
 
@@ -730,6 +845,7 @@
                     
                     baseSalaryInput.value = baseSalary > 0 ? baseSalary : '';
                     saveToStorage();
+                    updateFilters();
                     renderShifts();
                     renderCommitments();
                     calculateTotals();
@@ -779,6 +895,7 @@
             if(importedCount > 0) {
                 shiftsData.sort((a, b) => new Date(a.date) - new Date(b.date));
                 saveToStorage();
+                updateFilters();
                 renderShifts();
                 calculateTotals();
                 showToast(`Importati ${importedCount} turni dal calendario! Bravissima! 💛`);
@@ -811,6 +928,7 @@
 
             shiftsData.sort((a, b) => new Date(a.date) - new Date(b.date));
             saveToStorage();
+            updateFilters();
             renderShifts();
             calculateTotals();
             showToast(`Importati ${importedCount} turni dal CSV!`);
