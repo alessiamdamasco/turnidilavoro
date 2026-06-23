@@ -3,265 +3,926 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestione Turni Ally - Registro Totale</title>
+    <title>Impegni Ally</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome per le icone -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        lottoBlue: '#0055A5',
+                        lottoYellow: '#FFCC00',
+                        lottoWhite: '#FFFFFF',
+                        lottoDark: '#003366'
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --rose-gold: #b76e79;
-            --light-rose: #f9f1f2;
-            --dark-rose: #8a4f58;
-            --gold-gradient: linear-gradient(135deg, #e0b0b6 0%, #b76e79 50%, #8a4f58 100%);
-            --white: #ffffff;
+        body { background-color: #f0f4f8; }
+        /* Scrollbar personalizzata */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #0055A5; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #003366; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #faf6f6;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-
-        /* Dashboard sempre visibile */
-        .dashboard {
-            display: block;
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 20px;
-        }
-
-        header {
-            background: var(--gold-gradient);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(183, 110, 121, 0.3);
-            margin-bottom: 30px;
-        }
-
-        header h1 { margin: 0; font-weight: 300; }
-
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            border-top: 4px solid var(--rose-gold);
-            margin-bottom: 25px;
-        }
-
-        .card h3 {
-            margin-top: 0;
-            color: var(--dark-rose);
-            border-bottom: 1px solid var(--light-rose);
-            padding-bottom: 10px;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--dark-rose);
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e0b0b6;
-            border-radius: 8px;
-            box-sizing: border-box;
-            background-color: var(--light-rose);
-            color: #333;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--rose-gold);
-        }
-
-        .btn {
-            background: var(--gold-gradient);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .btn-secondary { background: #7f8c8d; }
-        .btn-warning { background: #f39c12; }
-
-        .suggest-btn {
-            background: #eededf;
-            color: var(--dark-rose);
-            border: none;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 12px;
-            cursor: pointer;
-            margin-top: 5px;
-            margin-right: 5px;
-            font-weight: 600;
-        }
-
-        .salary-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-top: 15px;
-        }
-
-        .salary-widget {
-            background: var(--light-rose);
-            border: 1px dashed var(--rose-gold);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .salary-amount {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--dark-rose);
-            margin-top: 5px;
-        }
-
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 30px;
-        }
-
-        @media (max-width: 768px) {
-            .main-layout { grid-template-columns: 1fr; }
-        }
-
-        .table-container { overflow-x: auto; max-height: 500px; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eededf; }
-        th { background-color: var(--light-rose); color: var(--dark-rose); position: sticky; top: 0; }
-
-        .badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
-        .badge-goldbet { background: #e3f2fd; color: #0d47a1; }
-        .badge-planet { background: #fff3e0; color: #e65100; }
-        .badge-generic { background: #e8e8e8; color: #555555; }
     </style>
 </head>
-<body>
+<body class="text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <div class="dashboard">
-        <header>
-            <h1>Registro Turni Personale ✨</h1>
-        </header>
-
-        <!-- Filtro Mese/Anno e Resoconto -->
-        <div class="card">
-            <h3>Filtra Periodo & Guadagni</h3>
-            <div class="input-group" style="max-width: 400px;">
-                <label>Seleziona il mese da esaminare:</label>
-                <select id="periodFilter" onchange="aggiornaVisualizzazione()">
-                </select>
+    <!-- Header -->
+    <header class="bg-lottoBlue text-lottoWhite shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-calendar-check text-lottoYellow text-3xl"></i>
+                <h1 class="text-2xl font-bold tracking-wide">Impegni Ally <span class="text-lottoYellow">💛</span></h1>
             </div>
-
-            <div class="salary-container">
-                <div class="salary-widget">
-                    <div>Stipendio Base Mensile</div>
-                    <div class="salary-amount">850,00 €</div>
-                </div>
-                <div class="salary-widget">
-                    <div>Turni Extra (Planetwin365)</div>
-                    <div class="salary-amount" id="extraCount">0 turni (+0,00 €)</div>
-                </div>
-                <div class="salary-widget" style="background: var(--gold-gradient); color: white;">
-                    <div style="color: white;">Stipendio Totale</div>
-                    <div class="salary-amount" id="totalSalary" style="color: white;">850,00 €</div>
-                </div>
+            <div class="text-sm font-medium">
+                Ciao Amo! <i class="fa-solid fa-sparkles text-lottoYellow"></i>
             </div>
         </div>
+    </header>
 
-        <div class="main-layout">
-            <div class="card">
-                <h3 id="formTitle">Gestisci Turno</h3>
-                <input type="hidden" id="editId" value="">
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Forms -->
+        <div class="lg:col-span-4 space-y-6">
+            
+            <!-- Aggiungi Turno Card -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-lottoBlue">
+                <div class="bg-blue-50 px-4 py-3 border-b border-blue-100 flex items-center justify-between">
+                    <h2 class="font-bold text-lottoDark"><i class="fa-solid fa-briefcase mr-2 text-lottoBlue"></i> Gestione Turni</h2>
+                    <button id="cancelShiftEditBtn" class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200">Annulla</button>
+                </div>
+                <div class="p-4 space-y-4">
+                    <input type="hidden" id="shiftId">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+                        <input type="date" id="shiftDate" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sede di Lavoro</label>
+                        <select id="shiftLocation" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+                            <option value="Goldbet Stazione">Goldbet Stazione</option>
+                            <option value="Planetwin365">Planetwin365</option>
+                            <option value="Nessuna (Malattia)">Nessuna (Es. Malattia)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo di Turno</label>
+                        <select id="shiftType" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+                            <option value="Mattina">Mattina (09:00 - 13:30)</option>
+                            <option value="Pomeriggio">Pomeriggio (15:00 - 20:30)</option>
+                            <option value="Malattia">Malattia 🤒</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-2 mt-2">
+                        <input type="checkbox" id="shiftIsExtra" class="w-4 h-4 text-lottoBlue focus:ring-lottoYellow border-gray-300 rounded cursor-pointer">
+                        <label for="shiftIsExtra" class="text-sm font-medium text-gray-700 cursor-pointer">È un turno Extra?</label>
+                    </div>
+
+                    <div id="extraAmountContainer" class="hidden fade-in">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Importo Extra (€)</label>
+                        <input type="number" id="shiftExtraAmount" step="0.01" min="0" placeholder="0.00" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+                    </div>
+
+                    <button id="saveShiftBtn" class="w-full bg-lottoBlue hover:bg-lottoDark text-white font-bold py-2 px-4 rounded transition duration-200">
+                        <i class="fa-solid fa-plus mr-1"></i> Aggiungi Turno
+                    </button>
+                </div>
+            </div>
+
+            <!-- Aggiungi Impegno Personale Card -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-lottoYellow">
+                <div class="bg-yellow-50 px-4 py-3 border-b border-yellow-100 flex items-center justify-between">
+                    <h2 class="font-bold text-yellow-800"><i class="fa-solid fa-star mr-2 text-lottoYellow"></i> Impegni Personali</h2>
+                    <button id="cancelCommEditBtn" class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200">Annulla</button>
+                </div>
+                <div class="p-4 space-y-4">
+                    <input type="hidden" id="commId">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cosa devi fare? (es. Refill unghie)</label>
+                        <input type="text" id="commTitle" placeholder="Inserisci impegno..." class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+                        <input type="date" id="commDate" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ora Inizio</label>
+                            <input type="time" id="commStart" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ora Fine</label>
+                            <input type="time" id="commEnd" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+                        </div>
+                    </div>
+
+                    <button id="saveCommBtn" class="w-full bg-lottoYellow hover:bg-yellow-500 text-lottoDark font-bold py-2 px-4 rounded transition duration-200 shadow-sm">
+                        <i class="fa-solid fa-plus mr-1"></i> Aggiungi Impegno
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Middle Column: Shift List -->
+        <div class="lg:col-span-5 flex flex-col space-y-4">
+            <div class="bg-white rounded-xl shadow-lg flex-grow flex flex-col border-t-4 border-lottoBlue overflow-hidden">
+                <div class="bg-blue-50 px-4 py-3 border-b border-blue-100 flex justify-between items-center">
+                    <h2 class="font-bold text-lottoDark"><i class="fa-solid fa-list-check mr-2"></i> I tuoi Turni</h2>
+                    <div class="flex gap-2">
+                        <label class="cursor-pointer text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 transition" title="Importa file .ICS o .CSV">
+                            <i class="fa-solid fa-file-import"></i> Importa
+                            <input type="file" id="importFileInput" accept=".ics,.csv" class="hidden">
+                        </label>
+                        <button onclick="exportICS()" class="text-xs bg-lottoBlue text-white px-2 py-1 rounded hover:bg-lottoDark transition" title="Esporta per Google Calendar">
+                            <i class="fa-solid fa-calendar-arrow-down"></i> .ICS
+                        </button>
+                        <button onclick="exportCSV()" class="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transition" title="Esporta in Excel/CSV">
+                            <i class="fa-solid fa-file-csv"></i> .CSV
+                        </button>
+                    </div>
+                </div>
                 
-                <div class="input-group">
-                    <label>Data</label>
-                    <input type="date" id="turnoData" required>
-                </div>
-                <div class="input-group">
-                    <label>Posto di Lavoro</label>
-                    <input type="text" id="turnoSede" required>
-                    <button type="button" class="suggest-btn" onclick="impostaSedeRapida('Goldbet stazione')">Goldbet</button>
-                    <button type="button" class="suggest-btn" onclick="impostaSedeRapida('Planetwin365 via Marsala')">Planet</button>
-                </div>
-                <div class="input-group">
-                    <label>Fascia</label>
-                    <select id="turnoFascia">
-                        <option value="Mattina">Mattina</option>
-                        <option value="Pomeriggio">Pomeriggio</option>
-                    </select>
-                </div>
-                <div class="input-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div><label>Ora Inizio</label><input type="time" id="oraInizio" value="09:00"></div>
-                    <div><label>Ora Fine</label><input type="time" id="oraFine" value="15:00"></div>
-                </div>
-                <button class="btn" style="width:100%;" onclick="salvaTurno()">Salva Turno</button>
-            </div>
-
-            <div class="card">
-                <h3>Elenco Turni</h3>
-                <div class="table-container">
-                    <table>
-                        <thead><tr><th>Data</th><th>Sede</th><th>Fascia</th><th>Orario</th><th>Azioni</th></tr></thead>
-                        <tbody id="tabellaTurni"></tbody>
-                    </table>
+                <div class="p-4 flex-grow overflow-y-auto" style="max-height: 600px;">
+                    <div id="shiftsContainer" class="space-y-3">
+                        <!-- Shifts will be injected here -->
+                        <div class="text-center text-gray-400 py-10 italic">
+                            Caricamento turni in corso...
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Right Column: Personal list & Finances -->
+        <div class="lg:col-span-3 space-y-6">
+            
+            <!-- Calcolatore Stipendio -->
+            <div class="bg-lottoDark rounded-xl shadow-lg overflow-hidden text-white">
+                <div class="bg-black/20 px-4 py-3 border-b border-white/10">
+                    <h2 class="font-bold text-lottoYellow"><i class="fa-solid fa-sack-dollar mr-2"></i> Finanze del mese</h2>
+                </div>
+                <div class="p-4 space-y-4">
+                    
+                    <div class="bg-white/10 p-3 rounded-lg border border-white/20">
+                        <p class="text-sm text-gray-300">Totale Extra Calcolati</p>
+                        <p class="text-2xl font-bold text-lottoYellow">€ <span id="displayTotExtra">0.00</span></p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Stipendio Base (€)</label>
+                        <input type="number" id="baseSalaryInput" step="1" min="0" placeholder="Es. 800" class="w-full p-2 bg-white/10 border border-white/20 rounded text-white focus:ring-2 focus:ring-lottoYellow outline-none placeholder-gray-400">
+                    </div>
+
+                    <div class="bg-lottoBlue p-3 rounded-lg border border-blue-400 shadow-inner">
+                        <p class="text-sm text-blue-100">Stipendio Complessivo Stimato</p>
+                        <p class="text-3xl font-bold text-white">€ <span id="displayTotSalary">0.00</span></p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Impegni List -->
+            <div class="bg-white rounded-xl shadow-lg flex-grow flex flex-col border-t-4 border-lottoYellow overflow-hidden">
+                <div class="bg-yellow-50 px-4 py-3 border-b border-yellow-100">
+                    <h2 class="font-bold text-yellow-800"><i class="fa-solid fa-thumbtack mr-2"></i> Prossimi Impegni</h2>
+                </div>
+                <div class="p-4 flex-grow overflow-y-auto" style="max-height: 350px;">
+                    <div id="commitmentsContainer" class="space-y-3">
+                        <!-- Commitments will be injected here -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Custom Modal/Toast for Notifications -->
+    <div id="toast" class="fixed bottom-4 right-4 p-4 rounded-lg text-white shadow-xl opacity-0 pointer-events-none transition-opacity duration-300 z-50 transform translate-y-2 flex items-center gap-3">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-xl"></i>
+        <span id="toastMsg" class="font-medium"></span>
     </div>
 
-    <script>
-        let turni = JSON.parse(localStorage.getItem('registro_completo_ally_v3')) || [];
+    <!-- Firebase e Logica App -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Configurazione Iniziale Firebase (MANDATORY RULES APPLIED) ---
+        let app, auth, db;
+        const fallbackConfig = {
+            apiKey: "dummy-key",
+            authDomain: "dummy-domain.firebaseapp.com",
+            projectId: "dummy-project",
+            storageBucket: "dummy-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
         
-        // Se è la prima volta, carica lo storico base
-        if (turni.length === 0) {
-            // (Il tuo array storico rimane uguale qui)
-            localStorage.setItem('registro_completo_ally_v3', JSON.stringify(turni));
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : fallbackConfig;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'impegni-ally-default';
+        
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) {
+            console.error("Firebase init error", e);
+            showToast("Errore di inizializzazione cloud. Modalità provvisoria.", 'error');
         }
 
-        window.onload = function() {
-            popolaSelettoreMesi();
-            aggiornaVisualizzazione();
+        let currentUserId = null;
+        let unsubscribeShifts = null;
+        let unsubscribeComms = null;
+        let unsubscribeSalary = null;
+
+        // Dati in memoria
+        let shiftsData = [];
+        let commitmentsData = [];
+        let baseSalary = 0;
+
+        // --- Autenticazione ---
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Auth error:", error);
+                showToast("Impossibile accedere per salvare i dati.", 'error');
+            }
         };
 
-        function salvaTurno() {
-            const nuovoTurno = {
-                id: 'id_' + Date.now(),
-                data: document.getElementById('turnoData').value,
-                sede: document.getElementById('turnoSede').value,
-                fascia: document.getElementById('turnoFascia').value,
-                inizio: document.getElementById('oraInizio').value,
-                fine: document.getElementById('oraFine').value
-            };
-            turni.push(nuovoTurno);
-            localStorage.setItem('registro_completo_ally_v3', JSON.stringify(turni));
-            aggiornaVisualizzazione();
+        // Ascoltatore di stato Auth
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                loadData();
+            } else {
+                currentUserId = null;
+                if(unsubscribeShifts) unsubscribeShifts();
+                if(unsubscribeComms) unsubscribeComms();
+                if(unsubscribeSalary) unsubscribeSalary();
+            }
+        });
+
+        // Avvia Auth
+        initAuth();
+
+        // --- Gestione UI ed Eventi ---
+        
+        // Elementi DOM Turni
+        const shiftIdInput = document.getElementById('shiftId');
+        const shiftDateInput = document.getElementById('shiftDate');
+        const shiftLocationInput = document.getElementById('shiftLocation');
+        const shiftTypeInput = document.getElementById('shiftType');
+        const shiftIsExtraCheckbox = document.getElementById('shiftIsExtra');
+        const extraAmountContainer = document.getElementById('extraAmountContainer');
+        const shiftExtraAmountInput = document.getElementById('shiftExtraAmount');
+        const saveShiftBtn = document.getElementById('saveShiftBtn');
+        const cancelShiftEditBtn = document.getElementById('cancelShiftEditBtn');
+        const shiftsContainer = document.getElementById('shiftsContainer');
+
+        // Elementi DOM Impegni
+        const commIdInput = document.getElementById('commId');
+        const commTitleInput = document.getElementById('commTitle');
+        const commDateInput = document.getElementById('commDate');
+        const commStartInput = document.getElementById('commStart');
+        const commEndInput = document.getElementById('commEnd');
+        const saveCommBtn = document.getElementById('saveCommBtn');
+        const cancelCommEditBtn = document.getElementById('cancelCommEditBtn');
+        const commitmentsContainer = document.getElementById('commitmentsContainer');
+
+        // Elementi DOM Calcolatore
+        const baseSalaryInput = document.getElementById('baseSalaryInput');
+        const displayTotExtra = document.getElementById('displayTotExtra');
+        const displayTotSalary = document.getElementById('displayTotSalary');
+
+        // Elemento Input File per Importazione
+        const importFileInput = document.getElementById('importFileInput');
+
+        // Mostra/Nascondi input importo extra
+        shiftIsExtraCheckbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                extraAmountContainer.classList.remove('hidden');
+            } else {
+                extraAmountContainer.classList.add('hidden');
+                shiftExtraAmountInput.value = '';
+            }
+        });
+
+        // Gestione cambio tipo turno (Se malattia, oscura/cambia location)
+        shiftTypeInput.addEventListener('change', (e) => {
+            if (e.target.value === 'Malattia') {
+                shiftLocationInput.value = 'Nessuna (Malattia)';
+                shiftLocationInput.disabled = true;
+                shiftIsExtraCheckbox.checked = false;
+                shiftIsExtraCheckbox.disabled = true;
+                extraAmountContainer.classList.add('hidden');
+            } else {
+                if(shiftLocationInput.value === 'Nessuna (Malattia)') {
+                    shiftLocationInput.value = 'Goldbet Stazione';
+                }
+                shiftLocationInput.disabled = false;
+                shiftIsExtraCheckbox.disabled = false;
+            }
+        });
+
+        // --- Load Data from Firestore (RULE 1 & 2 applied) ---
+        function loadData() {
+            if (!currentUserId) return;
+
+            // Carica Turni
+            const shiftsRef = collection(db, 'artifacts', appId, 'users', currentUserId, 'shifts');
+            unsubscribeShifts = onSnapshot(shiftsRef, (snapshot) => {
+                shiftsData = [];
+                snapshot.forEach(doc => {
+                    shiftsData.push({ id: doc.id, ...doc.data() });
+                });
+                // Sort in memory (Rule 2)
+                shiftsData.sort((a, b) => new Date(a.date) - new Date(b.date));
+                renderShifts();
+                calculateTotals();
+            }, (err) => {
+                console.error("Error fetching shifts: ", err);
+                showToast("Errore nel caricamento turni.", "error");
+            });
+
+            // Carica Impegni
+            const commsRef = collection(db, 'artifacts', appId, 'users', currentUserId, 'commitments');
+            unsubscribeComms = onSnapshot(commsRef, (snapshot) => {
+                commitmentsData = [];
+                snapshot.forEach(doc => {
+                    commitmentsData.push({ id: doc.id, ...doc.data() });
+                });
+                commitmentsData.sort((a, b) => new Date(a.date) - new Date(b.date));
+                renderCommitments();
+            }, (err) => {
+                console.error("Error fetching commitments: ", err);
+            });
+
+            // Carica Configurazione Stipendio
+            const salaryRef = collection(db, 'artifacts', appId, 'users', currentUserId, 'settings');
+            unsubscribeSalary = onSnapshot(salaryRef, (snapshot) => {
+                snapshot.forEach(docSnap => {
+                    if (docSnap.id === 'salary') {
+                        baseSalary = docSnap.data().base || 0;
+                        if(document.activeElement !== baseSalaryInput) {
+                             baseSalaryInput.value = baseSalary > 0 ? baseSalary : '';
+                        }
+                        calculateTotals();
+                    }
+                });
+            }, (err) => console.error(err));
         }
 
-        function aggiornaVisualizzazione() {
-            // (La tua logica di tabella e calcolo stipendio rimane identica)
+        // --- Salva/Aggiorna Turno ---
+        saveShiftBtn.addEventListener('click', async () => {
+            if (!currentUserId) return showToast("Attendi connessione...", "error");
+            
+            const date = shiftDateInput.value;
+            const location = shiftLocationInput.value;
+            const type = shiftTypeInput.value;
+            const isExtra = shiftIsExtraCheckbox.checked;
+            const extraAmount = parseFloat(shiftExtraAmountInput.value) || 0;
+            const id = shiftIdInput.value;
+
+            if (!date) return showToast("Amo, inserisci almeno la data!", "error");
+
+            const shiftObj = {
+                date, location, type, isExtra, extraAmount
+            };
+
+            try {
+                if (id) {
+                    const docRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'shifts', id);
+                    await updateDoc(docRef, shiftObj);
+                    showToast("Turno aggiornato con successo!");
+                } else {
+                    const colRef = collection(db, 'artifacts', appId, 'users', currentUserId, 'shifts');
+                    await addDoc(colRef, shiftObj);
+                    showToast("Nuovo turno aggiunto! Bravissima!");
+                }
+                resetShiftForm();
+            } catch (err) {
+                console.error(err);
+                showToast("Errore durante il salvataggio.", "error");
+            }
+        });
+
+        // --- Salva/Aggiorna Impegno ---
+        saveCommBtn.addEventListener('click', async () => {
+            if (!currentUserId) return;
+
+            const title = commTitleInput.value.trim();
+            const date = commDateInput.value;
+            const start = commStartInput.value;
+            const end = commEndInput.value;
+            const id = commIdInput.value;
+
+            if (!title || !date) return showToast("Inserisci cosa devi fare e la data!", "error");
+
+            const commObj = { title, date, start, end };
+
+            try {
+                if (id) {
+                    const docRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'commitments', id);
+                    await updateDoc(docRef, commObj);
+                    showToast("Impegno aggiornato!");
+                } else {
+                    const colRef = collection(db, 'artifacts', appId, 'users', currentUserId, 'commitments');
+                    await addDoc(colRef, commObj);
+                    showToast("Impegno personale aggiunto!");
+                }
+                resetCommForm();
+            } catch (err) {
+                console.error(err);
+                showToast("Errore salvataggio impegno.", "error");
+            }
+        });
+
+        // --- Aggiornamento Stipendio Base ---
+        let salaryTimeout;
+        baseSalaryInput.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value) || 0;
+            baseSalary = val;
+            calculateTotals();
+            
+            // Debounce salvataggio su Firestore
+            clearTimeout(salaryTimeout);
+            salaryTimeout = setTimeout(async () => {
+                if (!currentUserId) return;
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'settings', 'salary');
+                    await setDoc(docRef, { base: val });
+                } catch (err) { console.error("Error saving salary", err); }
+            }, 1000);
+        });
+
+        // --- Eliminazioni ---
+        window.deleteShift = async (id) => {
+            if (!currentUserId) return;
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUserId, 'shifts', id));
+                showToast("Turno eliminato.", "success");
+            } catch (err) { console.error(err); }
+        };
+
+        window.deleteComm = async (id) => {
+            if (!currentUserId) return;
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUserId, 'commitments', id));
+                showToast("Impegno eliminato.", "success");
+            } catch (err) { console.error(err); }
+        };
+
+        // --- Modifica (Pre-popola form) ---
+        window.editShift = (id) => {
+            const s = shiftsData.find(x => x.id === id);
+            if (!s) return;
+            shiftIdInput.value = s.id;
+            shiftDateInput.value = s.date;
+            shiftLocationInput.value = s.location;
+            shiftLocationInput.disabled = (s.type === 'Malattia');
+            shiftTypeInput.value = s.type;
+            shiftIsExtraCheckbox.checked = s.isExtra;
+            shiftIsExtraCheckbox.disabled = (s.type === 'Malattia');
+            
+            if (s.isExtra) {
+                extraAmountContainer.classList.remove('hidden');
+                shiftExtraAmountInput.value = s.extraAmount;
+            } else {
+                extraAmountContainer.classList.add('hidden');
+                shiftExtraAmountInput.value = '';
+            }
+
+            saveShiftBtn.innerHTML = '<i class="fa-solid fa-save mr-1"></i> Aggiorna Turno';
+            saveShiftBtn.classList.replace('bg-lottoBlue', 'bg-green-600');
+            saveShiftBtn.classList.replace('hover:bg-lottoDark', 'hover:bg-green-700');
+            cancelShiftEditBtn.classList.remove('hidden');
+            
+            // Scroll top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.editComm = (id) => {
+            const c = commitmentsData.find(x => x.id === id);
+            if (!c) return;
+            commIdInput.value = c.id;
+            commTitleInput.value = c.title;
+            commDateInput.value = c.date;
+            commStartInput.value = c.start || '';
+            commEndInput.value = c.end || '';
+
+            saveCommBtn.innerHTML = '<i class="fa-solid fa-save mr-1"></i> Aggiorna Impegno';
+            saveCommBtn.classList.replace('bg-lottoYellow', 'bg-green-500');
+            cancelCommEditBtn.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // --- Reset Forms ---
+        cancelShiftEditBtn.addEventListener('click', resetShiftForm);
+        cancelCommEditBtn.addEventListener('click', resetCommForm);
+
+        function resetShiftForm() {
+            shiftIdInput.value = '';
+            shiftDateInput.value = '';
+            shiftLocationInput.value = 'Goldbet Stazione';
+            shiftLocationInput.disabled = false;
+            shiftTypeInput.value = 'Mattina';
+            shiftIsExtraCheckbox.checked = false;
+            shiftIsExtraCheckbox.disabled = false;
+            extraAmountContainer.classList.add('hidden');
+            shiftExtraAmountInput.value = '';
+            
+            saveShiftBtn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Aggiungi Turno';
+            saveShiftBtn.classList.replace('bg-green-600', 'bg-lottoBlue');
+            saveShiftBtn.classList.replace('hover:bg-green-700', 'hover:bg-lottoDark');
+            cancelShiftEditBtn.classList.add('hidden');
         }
-        
-        // ... (aggiungi le altre funzioni: popolaSelettoreMesi, eliminaTurno, ecc.)
+
+        function resetCommForm() {
+            commIdInput.value = '';
+            commTitleInput.value = '';
+            commDateInput.value = '';
+            commStartInput.value = '';
+            commEndInput.value = '';
+
+            saveCommBtn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Aggiungi Impegno';
+            saveCommBtn.classList.replace('bg-green-500', 'bg-lottoYellow');
+            cancelCommEditBtn.classList.add('hidden');
+        }
+
+
+        // --- Funzioni di Rendering ---
+        function renderShifts() {
+            if (shiftsData.length === 0) {
+                shiftsContainer.innerHTML = '<div class="text-center text-gray-500 py-6">Nessun turno inserito. Inizia ad aggiungerli!</div>';
+                return;
+            }
+
+            let html = '';
+            shiftsData.forEach(s => {
+                // Formattazione data (DD/MM/YYYY)
+                const dateObj = new Date(s.date);
+                const dateStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                
+                let icon = '';
+                let colorClass = '';
+                let timeStr = '';
+                
+                if (s.type === 'Malattia') {
+                    icon = 'fa-bed text-red-500';
+                    colorClass = 'border-red-400 bg-red-50';
+                    timeStr = 'Intera Giornata';
+                } else if (s.type === 'Mattina') {
+                    icon = 'fa-sun text-yellow-500';
+                    colorClass = 'border-yellow-300 bg-white';
+                    timeStr = '09:00 - 13:30';
+                } else {
+                    icon = 'fa-moon text-blue-500';
+                    colorClass = 'border-blue-300 bg-white';
+                    timeStr = '15:00 - 20:30';
+                }
+
+                const extraBadge = s.isExtra ? `<span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-semibold ml-2"><i class="fa-solid fa-euro-sign"></i> Extra (+${s.extraAmount}€)</span>` : '';
+
+                html += `
+                <div class="p-3 border-l-4 ${colorClass} rounded shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 fade-in">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-gray-800">${dateStr}</span>
+                            ${extraBadge}
+                        </div>
+                        <div class="text-sm text-gray-600 mt-1">
+                            <i class="fa-solid ${icon} w-5 text-center"></i> 
+                            <span class="font-medium">${s.type}</span> 
+                            ${s.type !== 'Malattia' ? `presso <b>${s.location}</b>` : ''}
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1"><i class="fa-regular fa-clock"></i> ${timeStr}</div>
+                    </div>
+                    <div class="flex gap-2 w-full sm:w-auto justify-end mt-2 sm:mt-0">
+                        <button onclick="editShift('${s.id}')" class="text-blue-500 hover:bg-blue-100 p-2 rounded transition" title="Modifica"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteShift('${s.id}')" class="text-red-500 hover:bg-red-100 p-2 rounded transition" title="Elimina"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+                `;
+            });
+            shiftsContainer.innerHTML = html;
+        }
+
+        function renderCommitments() {
+            if (commitmentsData.length === 0) {
+                commitmentsContainer.innerHTML = '<div class="text-center text-gray-500 py-6 text-sm">Nessun impegno personale.</div>';
+                return;
+            }
+
+            let html = '';
+            commitmentsData.forEach(c => {
+                const dateObj = new Date(c.date);
+                const dateStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
+                
+                const timeStr = (c.start && c.end) ? `${c.start} - ${c.end}` : (c.start ? `Dalle ${c.start}` : 'Orario da definire');
+
+                html += `
+                <div class="p-3 border-l-4 border-lottoYellow bg-yellow-50/50 rounded shadow-sm flex justify-between items-center fade-in">
+                    <div class="w-full">
+                        <div class="font-semibold text-gray-800">${c.title}</div>
+                        <div class="text-xs text-gray-600 mt-1 flex gap-3">
+                            <span><i class="fa-regular fa-calendar"></i> ${dateStr}</span>
+                            <span><i class="fa-regular fa-clock"></i> ${timeStr}</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-1">
+                        <button onclick="editComm('${c.id}')" class="text-gray-500 hover:text-blue-500 p-1"><i class="fa-solid fa-pen text-sm"></i></button>
+                        <button onclick="deleteComm('${c.id}')" class="text-gray-500 hover:text-red-500 p-1"><i class="fa-solid fa-trash text-sm"></i></button>
+                    </div>
+                </div>
+                `;
+            });
+            commitmentsContainer.innerHTML = html;
+        }
+
+        // --- Calcoli ---
+        function calculateTotals() {
+            let totalExtras = 0;
+            shiftsData.forEach(s => {
+                if (s.isExtra && !isNaN(s.extraAmount)) {
+                    totalExtras += parseFloat(s.extraAmount);
+                }
+            });
+            
+            const totalSalary = parseFloat(baseSalary || 0) + totalExtras;
+
+            displayTotExtra.innerText = totalExtras.toFixed(2);
+            displayTotSalary.innerText = totalSalary.toFixed(2);
+        }
+
+        // --- Esportazioni ---
+        window.exportICS = () => {
+            if (shiftsData.length === 0) return showToast("Nessun turno da esportare!", "error");
+            
+            let ics = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Impegni Ally//IT\nCALSCALE:GREGORIAN\n";
+            
+            shiftsData.forEach(s => {
+                const dateObj = new Date(s.date);
+                // Evito timezone complesse generando stringhe pulite YYYYMMDD
+                const y = dateObj.getFullYear();
+                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const d = String(dateObj.getDate()).padStart(2, '0');
+                const dateStr = `${y}${m}${d}`;
+
+                let startT = "090000";
+                let endT = "133000";
+                
+                if (s.type === 'Pomeriggio') {
+                    startT = "150000";
+                    endT = "203000";
+                }
+
+                ics += "BEGIN:VEVENT\n";
+                ics += `UID:${s.id}@impegnially.com\n`;
+                ics += `DTSTAMP:${dateStr}T000000Z\n`;
+                
+                if (s.type === 'Malattia') {
+                    // Evento tutto il giorno
+                    ics += `DTSTART;VALUE=DATE:${dateStr}\n`;
+                    ics += `SUMMARY:🤒 Malattia\n`;
+                } else {
+                    // Usiamo ora locale (Europe/Rome implicito se senza Z, ma in file ICS base conviene mettere la T e basta)
+                    ics += `DTSTART:${dateStr}T${startT}\n`;
+                    ics += `DTEND:${dateStr}T${endT}\n`;
+                    ics += `SUMMARY:Lavoro - ${s.type}\n`;
+                    ics += `LOCATION:${s.location}\n`;
+                    let desc = s.isExtra ? `Turno Extra (Importo: ${s.extraAmount} EUR)` : 'Turno standard';
+                    ics += `DESCRIPTION:${desc}\n`;
+                }
+                ics += "END:VEVENT\n";
+            });
+
+            ics += "END:VCALENDAR";
+
+            downloadFile(ics, 'Turni_Ally.ics', 'text/calendar');
+        };
+
+        window.exportCSV = () => {
+            if (shiftsData.length === 0) return showToast("Nessun turno da esportare!", "error");
+
+            let csv = "Data,Sede,Tipo,E' Extra,Importo Extra\n";
+            shiftsData.forEach(s => {
+                const dateObj = new Date(s.date);
+                const d = dateObj.toLocaleDateString('it-IT');
+                const isExtraStr = s.isExtra ? "Si" : "No";
+                const amount = s.isExtra ? s.extraAmount : "0";
+                // Rimuovo eventuali virgole dai campi di testo per non rompere il CSV
+                const loc = s.location.replace(/,/g, '');
+                
+                csv += `${d},${loc},${s.type},${isExtraStr},${amount}\n`;
+            });
+
+            downloadFile(csv, 'Turni_Ally.csv', 'text/csv');
+        };
+
+        // --- Importazione CSV e ICS ---
+        importFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!currentUserId) {
+                showToast("Devi essere connessa per importare!", "error");
+                importFileInput.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const content = event.target.result;
+                let parsedShifts = [];
+
+                try {
+                    if (file.name.endsWith('.csv')) {
+                        parsedShifts = parseCSV(content);
+                    } else if (file.name.endsWith('.ics')) {
+                        parsedShifts = parseICS(content);
+                    } else {
+                        showToast("Formato non supportato. Usa .csv o .ics", "error");
+                        return;
+                    }
+
+                    if (parsedShifts.length === 0) {
+                        showToast("Nessun turno valido trovato nel file.", "error");
+                        return;
+                    }
+
+                    showToast(`Trovati ${parsedShifts.length} turni. Importazione in corso...`);
+
+                    const colRef = collection(db, 'artifacts', appId, 'users', currentUserId, 'shifts');
+                    let added = 0;
+                    
+                    for (const shift of parsedShifts) {
+                        // Verifica base per evitare duplicati esatti nello stesso giorno
+                        const exists = shiftsData.find(s => s.date === shift.date && s.type === shift.type);
+                        if (!exists) {
+                            await addDoc(colRef, shift);
+                            added++;
+                        }
+                    }
+
+                    if(added > 0) {
+                        showToast(`Importazione completata! Aggiunti ${added} nuovi turni. 💛`, "success");
+                    } else {
+                        showToast(`I turni nel file erano già stati inseriti!`, "success");
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                    showToast("Errore durante la lettura del file.", "error");
+                } finally {
+                    importFileInput.value = ''; // Reset input
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        function parseCSV(content) {
+            const lines = content.split('\n');
+            const shifts = [];
+            for (let i = 1; i < lines.length; i++) { // Salta l'intestazione
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const parts = line.split(',');
+                if (parts.length >= 5) {
+                    // Converte DD/MM/YYYY in YYYY-MM-DD per il nostro sistema
+                    const dateParts = parts[0].split('/');
+                    let formattedDate = parts[0];
+                    if (dateParts.length === 3) {
+                        formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+                    }
+
+                    shifts.push({
+                        date: formattedDate,
+                        location: parts[1],
+                        type: parts[2],
+                        isExtra: parts[3].toLowerCase() === 'si',
+                        extraAmount: parseFloat(parts[4]) || 0
+                    });
+                }
+            }
+            return shifts;
+        }
+
+        function parseICS(content) {
+            const lines = content.split('\n');
+            const shifts = [];
+            let inEvent = false;
+            let currentShift = {};
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (line === 'BEGIN:VEVENT') {
+                    inEvent = true;
+                    currentShift = { isExtra: false, extraAmount: 0, location: 'Nessuna (Malattia)' };
+                } else if (line === 'END:VEVENT' && inEvent) {
+                    if (currentShift.date && currentShift.type) {
+                        shifts.push({ ...currentShift });
+                    }
+                    inEvent = false;
+                } else if (inEvent) {
+                    // Cattura la data dal formato ICS
+                    if (line.startsWith('DTSTART')) {
+                        const match = line.match(/:(\d{4})(\d{2})(\d{2})/);
+                        if (match) {
+                            currentShift.date = `${match[1]}-${match[2]}-${match[3]}`;
+                        }
+                    } else if (line.startsWith('SUMMARY')) {
+                        if (line.includes('Mattina')) currentShift.type = 'Mattina';
+                        else if (line.includes('Pomeriggio')) currentShift.type = 'Pomeriggio';
+                        else if (line.includes('Malattia')) currentShift.type = 'Malattia';
+                    } else if (line.startsWith('LOCATION')) {
+                        currentShift.location = line.substring(9).trim();
+                    } else if (line.startsWith('DESCRIPTION')) {
+                        if (line.includes('Extra')) {
+                            currentShift.isExtra = true;
+                            // Cerca un importo numerico nella descrizione
+                            const amountMatch = line.match(/Importo:\s*([\d.]+)/);
+                            if (amountMatch) {
+                                currentShift.extraAmount = parseFloat(amountMatch[1]);
+                            }
+                        }
+                    }
+                }
+            });
+            return shifts;
+        }
+
+        function downloadFile(content, fileName, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`File ${fileName} scaricato!`, "success");
+        }
+
+        // --- Utility Toast ---
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toastIcon');
+            const toastMsg = document.getElementById('toastMsg');
+            
+            toastMsg.innerText = msg;
+            
+            if (type === 'error') {
+                toast.classList.replace('bg-green-600', 'bg-red-500') || toast.classList.add('bg-red-500');
+                toastIcon.className = "fa-solid fa-circle-exclamation text-xl";
+            } else {
+                toast.classList.replace('bg-red-500', 'bg-green-600') || toast.classList.add('bg-green-600');
+                toastIcon.className = "fa-solid fa-circle-check text-xl";
+            }
+
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(-10px)';
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+            }, 3000);
+        }
+
     </script>
 </body>
 </html>
