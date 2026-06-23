@@ -1,1025 +1,2199 @@
 <!DOCTYPE html>
+
 <html lang="it">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Impegni Ally</title>
+
     <!-- Tailwind CSS -->
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome per le icone -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- FontAwesome -->
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
     <!-- Google Fonts -->
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <script>
+
         tailwind.config = {
+
             theme: {
+
                 extend: {
+
                     colors: {
+
                         lottoBlue: '#0055A5',
+
                         lottoYellow: '#FFCC00',
+
                         lottoWhite: '#FFFFFF',
+
                         lottoDark: '#003366'
+
                     },
+
                     fontFamily: {
+
                         sans: ['Poppins', 'sans-serif'],
+
                     }
+
                 }
+
             }
+
         }
+
     </script>
+
     <style>
+
         body { background-color: #f0f4f8; }
-        /* Scrollbar personalizzata */
+
         ::-webkit-scrollbar { width: 6px; }
+
         ::-webkit-scrollbar-track { background: #f1f1f1; }
+
         ::-webkit-scrollbar-thumb { background: #0055A5; border-radius: 10px; }
+
         ::-webkit-scrollbar-thumb:hover { background: #003366; }
-        
+
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
+
         @keyframes fadeIn {
+
             from { opacity: 0; transform: translateY(-10px); }
+
             to { opacity: 1; transform: translateY(0); }
+
         }
+
     </style>
+
 </head>
+
 <body class="text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <!-- Header -->
+    <!-- HEADER -->
+
     <header class="bg-lottoBlue text-lottoWhite shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center flex-wrap gap-3">
+
             <div class="flex items-center gap-3">
+
                 <i class="fa-solid fa-calendar-check text-lottoYellow text-3xl"></i>
+
                 <h1 class="text-2xl font-bold tracking-wide">Impegni Ally <span class="text-lottoYellow">💛</span></h1>
+
             </div>
-            <div class="flex items-center gap-4 text-sm font-medium">
+
+            <div class="flex items-center gap-3 text-sm font-medium flex-wrap">
+
                 <div id="userGreeting">Ciao Amo! <i class="fa-solid fa-sparkles text-lottoYellow"></i></div>
-                <button onclick="exportAllData()" class="bg-purple-600 text-white px-3 py-1.5 rounded-full shadow hover:bg-purple-700 transition flex items-center gap-2" title="Backup dati">
+
+                <button onclick="exportAllData()"
+
+                        class="bg-purple-600 text-white px-3 py-1.5 rounded-full shadow hover:bg-purple-700 transition flex items-center gap-2"
+
+                        title="Backup dati">
+
                     <i class="fa-solid fa-floppy-disk"></i> Backup
+
                 </button>
-                <button onclick="document.getElementById('importFile').click()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-full shadow hover:bg-indigo-700 transition flex items-center gap-2" title="Ripristina dati">
+
+                <button onclick="document.getElementById('importFile').click()"
+
+                        class="bg-indigo-600 text-white px-3 py-1.5 rounded-full shadow hover:bg-indigo-700 transition flex items-center gap-2"
+
+                        title="Ripristina dati">
+
                     <i class="fa-solid fa-upload"></i> Ripristina
+
                 </button>
-                <input type="file" id="importFile" accept=".json" class="hidden">
+
+                <input type="file" id="importFile" accept=".json" class="hidden" />
+
             </div>
+
         </div>
+
     </header>
 
-    <!-- Main Content -->
+    <!-- MAIN -->
+
     <main class="flex-grow max-w-7xl mx-auto px-4 py-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- Left Column: Forms -->
+
+        <!-- LEFT COLUMN -->
+
         <div class="lg:col-span-4 space-y-6">
-            
-            <!-- Aggiungi Turno Card -->
+
+            <!-- GESTIONE TURNI -->
+
             <div class="bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-lottoBlue">
+
                 <div class="bg-blue-50 px-4 py-3 border-b border-blue-100 flex items-center justify-between">
-                    <h2 class="font-bold text-lottoDark"><i class="fa-solid fa-briefcase mr-2 text-lottoBlue"></i> Gestione Turni</h2>
-                    <button id="cancelShiftEditBtn" class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200">Annulla</button>
+
+                    <h2 class="font-bold text-lottoDark">
+
+                        <i class="fa-solid fa-briefcase mr-2 text-lottoBlue"></i> Gestione Turni
+
+                    </h2>
+
+                    <button id="cancelShiftEditBtn"
+
+                            class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200">
+
+                        Annulla
+
+                    </button>
+
                 </div>
+
                 <div class="p-4 space-y-4">
-                    <input type="hidden" id="shiftId">
-                    
+
+                    <input type="hidden" id="shiftId" />
+
                     <div>
+
                         <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
-                        <input type="date" id="shiftDate" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+
+                        <input type="date" id="shiftDate"
+
+                               class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none" />
+
                     </div>
 
                     <div>
+
                         <label class="block text-sm font-medium text-gray-700 mb-1">Sede di Lavoro</label>
-                        <select id="shiftLocation" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+
+                        <select id="shiftLocation"
+
+                                class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+
                             <option value="Goldbet Stazione">Goldbet Stazione</option>
+
                             <option value="Planetwin365">Planetwin365</option>
-                            <option value="Nessuna (Malattia)">Nessuna (Es. Malattia)</option>
+
+                            <option value="Nessuna (Malattia)">Nessuna (Malattia)</option>
+
                         </select>
+
                     </div>
 
                     <div>
+
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tipo di Turno</label>
-                        <select id="shiftType" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+
+                        <select id="shiftType"
+
+                                class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+
                             <option value="Mattina">Mattina (09:00 - 13:30)</option>
+
                             <option value="Pomeriggio">Pomeriggio (15:00 - 20:30)</option>
+
                             <option value="Malattia">Malattia 🤒</option>
+
                         </select>
+
                     </div>
 
                     <div class="flex items-center gap-2 mt-2">
-                        <input type="checkbox" id="shiftIsExtra" class="w-4 h-4 text-lottoBlue focus:ring-lottoYellow border-gray-300 rounded cursor-pointer">
-                        <label for="shiftIsExtra" class="text-sm font-medium text-gray-700 cursor-pointer">È un turno Extra?</label>
+
+                        <input type="checkbox" id="shiftIsExtra"
+
+                               class="w-4 h-4 text-lottoBlue focus:ring-lottoYellow border-gray-300 rounded cursor-pointer" />
+
+                        <label for="shiftIsExtra" class="text-sm font-medium text-gray-700 cursor-pointer">
+
+                            È un turno Extra?
+
+                        </label>
+
                     </div>
 
                     <div id="extraAmountContainer" class="hidden fade-in">
+
                         <label class="block text-sm font-medium text-gray-700 mb-1">Importo Extra (€)</label>
-                        <input type="number" id="shiftExtraAmount" step="0.01" min="0" placeholder="0.00" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+
+                        <input type="number" id="shiftExtraAmount" step="0.01" min="0" placeholder="0.00"
+
+                               class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none" />
+
                     </div>
 
-                    <button id="saveShiftBtn" class="w-full bg-lottoBlue hover:bg-lottoDark text-white font-bold py-2 px-4 rounded transition duration-200">
+                    <button id="saveShiftBtn"
+
+                            class="w-full bg-lottoBlue hover:bg-lottoDark text-white font-bold py-2 px-4 rounded transition duration-200">
+
                         <i class="fa-solid fa-plus mr-1"></i> Aggiungi Turno
+
                     </button>
+
+                    <button onclick="deleteAllShifts()"
+
+                            class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+
+                        <i class="fa-solid fa-trash-can mr-1"></i> Cancella tutti i turni
+
+                    </button>
+
                 </div>
+
             </div>
 
-            <!-- Aggiungi Impegno Personale Card -->
+            <!-- IMPEGNI PERSONALI -->
+
             <div class="bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-lottoYellow">
+
                 <div class="bg-yellow-50 px-4 py-3 border-b border-yellow-100 flex items-center justify-between">
-                    <h2 class="font-bold text-yellow-800"><i class="fa-solid fa-star mr-2 text-lottoYellow"></i> Impegni Personali</h2>
-                    <button id="cancelCommEditBtn" class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200">Annulla</button>
+
+                    <h2 class="font-bold text-yellow-800">
+
+                        <i class="fa-solid fa-star mr-2 text-lottoYellow"></i> Impegni Personali
+
+                    </h2>
+
+                    <button id="cancelCommEditBtn"
+
+                            class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200">
+
+                        Annulla
+
+                    </button>
+
                 </div>
+
                 <div class="p-4 space-y-4">
-                    <input type="hidden" id="commId">
-                    
+
+                    <input type="hidden" id="commId" />
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Cosa devi fare? (es. Refill unghie)</label>
-                        <input type="text" id="commTitle" placeholder="Inserisci impegno..." class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Cosa devi fare?</label>
+
+                        <input type="text" id="commTitle" placeholder="Es. Refill unghie"
+
+                               class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none" />
+
                     </div>
 
                     <div>
+
                         <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
-                        <input type="date" id="commDate" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+
+                        <input type="date" id="commDate"
+
+                               class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none" />
+
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
+
                         <div>
+
                             <label class="block text-sm font-medium text-gray-700 mb-1">Ora Inizio</label>
-                            <input type="time" id="commStart" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+
+                            <input type="time" id="commStart"
+
+                                   class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none" />
+
                         </div>
+
                         <div>
+
                             <label class="block text-sm font-medium text-gray-700 mb-1">Ora Fine</label>
-                            <input type="time" id="commEnd" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
-                        
-                        <button onclick="deleteAllShifts()" class="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 transition" title="Cancella tutti i turni">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
 
-</div>
-                    </div>
+                            <input type="time" id="commEnd"
 
-                    <button id="saveCommBtn" class="w-full bg-lottoYellow hover:bg-yellow-500 text-lottoDark font-bold py-2 px-4 rounded transition duration-200 shadow-sm">
-                        <i class="fa-solid fa-plus mr-1"></i> Aggiungi Impegno
-                    </button>
-                </div>
-            </div>
+                                   class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none" />
 
-        </div>
-
-        <!-- Middle Column: Shift List -->
-        <div class="lg:col-span-5 flex flex-col space-y-4">
-            <div class="bg-white rounded-xl shadow-lg flex-grow flex flex-col border-t-4 border-lottoBlue overflow-hidden">
-                <div class="bg-blue-50 px-4 py-3 border-b border-blue-100 flex justify-between items-center flex-wrap gap-3">
-                    <h2 class="font-bold text-lottoDark"><i class="fa-solid fa-list-check mr-2"></i> I tuoi Turni</h2>
-                    <div class="flex gap-2 flex-wrap">
-                        <!-- Filtri Mese/Anno -->
-                        <select id="monthFilter" class="text-xs p-1.5 border border-gray-300 rounded bg-white">
-                            <option value="">Tutti i mesi</option>
-                        </select>
-                        <select id="yearFilter" class="text-xs p-1.5 border border-gray-300 rounded bg-white">
-                            <option value="">Tutti gli anni</option>
-                        </select>
-                        
-                        <!-- Pulsanti Export -->
-                        <input type="file" id="fileImport" accept=".ics,.csv" class="hidden">
-                        <button onclick="document.getElementById('fileImport').click()" class="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 transition" title="Importa file">
-                            <i class="fa-solid fa-upload"></i>
-                        </button>
-                        <button onclick="exportICS()" class="text-xs bg-lottoBlue text-white px-2 py-1 rounded hover:bg-lottoDark transition" title="Esporta .ICS">
-                            <i class="fa-solid fa-calendar-arrow-down"></i>
-                        </button>
-                        <button onclick="exportCSV()" class="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transition" title="Esporta .CSV">
-                            <i class="fa-solid fa-file-csv"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="p-4 flex-grow overflow-y-auto" style="max-height: 600px;">
-                    <div id="shiftsContainer" class="space-y-4">
-                        <div class="text-center text-gray-400 py-10 italic">
-                            Caricamento turni in corso...
                         </div>
+
                     </div>
+
+                    <button id="saveCommBtn"
+
+                            class="w-full bg-lottoYellow hover:bg-yellow-500 text-lottoDark font-bold py-2 px-4 rounded transition duration-200 shadow-sm">
+
+                        <i class="fa-solid fa-plus mr-1"></i> Aggiungi Impegno
+
+                    </button>
+
                 </div>
+
             </div>
+
         </div>
 
-        <!-- Right Column: Personal list & Finances -->
-        <div class="lg:col-span-3 space-y-6">
-            
-            <!-- Calcolatore Stipendio -->
-            <div class="bg-lottoDark rounded-xl shadow-lg overflow-hidden text-white">
-                <div class="bg-black/20 px-4 py-3 border-b border-white/10">
-                    <h2 class="font-bold text-lottoYellow"><i class="fa-solid fa-sack-dollar mr-2"></i> Finanze del mese</h2>
+        <!-- MIDDLE COLUMN -->
+
+        <div class="lg:col-span-5 flex flex-col space-y-4">
+
+            <div class="bg-white rounded-xl shadow-lg flex-grow flex flex-col border-t-4 border-lottoBlue overflow-hidden">
+
+                <div class="bg-blue-50 px-4 py-3 border-b border-blue-100 flex justify-between items-center flex-wrap gap-3">
+
+                    <h2 class="font-bold text-lottoDark">
+
+                        <i class="fa-solid fa-list-check mr-2"></i> I tuoi Turni
+
+                    </h2>
+
+                    <div class="flex gap-2 flex-wrap">
+
+                        <select id="monthFilter" class="text-xs p-1.5 border border-gray-300 rounded bg-white">
+
+                            <option value="">Tutti i mesi</option>
+
+                        </select>
+
+                        <select id="yearFilter" class="text-xs p-1.5 border border-gray-300 rounded bg-white">
+
+                            <option value="">Tutti gli anni</option>
+
+                        </select>
+
+                        <input type="file" id="fileImport" accept=".ics,.csv" class="hidden" />
+
+                        <button onclick="document.getElementById('fileImport').click()"
+
+                                class="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 transition"
+
+                                title="Importa file .ics o .csv">
+
+                            <i class="fa-solid fa-upload"></i>
+
+                        </button>
+
+                        <button onclick="exportICS()"
+
+                                class="text-xs bg-lottoBlue text-white px-2 py-1 rounded hover:bg-lottoDark transition"
+
+                                title="Esporta .ICS">
+
+                            <i class="fa-solid fa-calendar-arrow-down"></i>
+
+                        </button>
+
+                        <button onclick="exportCSV()"
+
+                                class="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transition"
+
+                                title="Esporta .CSV">
+
+                            <i class="fa-solid fa-file-csv"></i>
+
+                        </button>
+
+                    </div>
+
                 </div>
+
+                <div class="p-4 flex-grow overflow-y-auto" style="max-height: 600px;">
+
+                    <div id="shiftsContainer" class="space-y-4">
+
+                        <div class="text-center text-gray-400 py-10 italic">Caricamento turni in corso...</div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+
+        <div class="lg:col-span-3 space-y-6">
+
+            <!-- FINANZE -->
+
+            <div class="bg-lottoDark rounded-xl shadow-lg overflow-hidden text-white">
+
+                <div class="bg-black/20 px-4 py-3 border-b border-white/10">
+
+                    <h2 class="font-bold text-lottoYellow">
+
+                        <i class="fa-solid fa-sack-dollar mr-2"></i> Finanze del mese
+
+                    </h2>
+
+                </div>
+
                 <div class="p-4 space-y-4">
-                    
+
                     <div class="bg-white/10 p-3 rounded-lg border border-white/20">
+
                         <p class="text-sm text-gray-300">Totale Extra Calcolati</p>
+
                         <p class="text-2xl font-bold text-lottoYellow">€ <span id="displayTotExtra">0.00</span></p>
+
                     </div>
 
                     <div>
+
                         <label class="block text-sm font-medium text-gray-300 mb-1">Stipendio Base (€)</label>
-                        <input type="number" id="baseSalaryInput" step="1" min="0" placeholder="Es. 800" class="w-full p-2 bg-white/10 border border-white/20 rounded text-white focus:ring-2 focus:ring-lottoYellow outline-none placeholder-gray-400">
+
+                        <input type="number" id="baseSalaryInput" step="1" min="0" placeholder="Es. 800"
+
+                               class="w-full p-2 bg-white/10 border border-white/20 rounded text-white focus:ring-2 focus:ring-lottoYellow outline-none placeholder-gray-400" />
+
                     </div>
 
                     <div class="bg-lottoBlue p-3 rounded-lg border border-blue-400 shadow-inner">
+
                         <p class="text-sm text-blue-100">Stipendio Complessivo Stimato</p>
+
                         <p class="text-3xl font-bold text-white">€ <span id="displayTotSalary">0.00</span></p>
+
                     </div>
 
                 </div>
+
             </div>
 
-            <!-- Impegni List -->
+            <!-- IMPEGNI LISTA -->
+
             <div class="bg-white rounded-xl shadow-lg flex-grow flex flex-col border-t-4 border-lottoYellow overflow-hidden">
+
                 <div class="bg-yellow-50 px-4 py-3 border-b border-yellow-100">
-                    <h2 class="font-bold text-yellow-800"><i class="fa-solid fa-thumbtack mr-2"></i> Prossimi Impegni</h2>
+
+                    <h2 class="font-bold text-yellow-800">
+
+                        <i class="fa-solid fa-thumbtack mr-2"></i> Prossimi Impegni
+
+                    </h2>
+
                 </div>
+
                 <div class="p-4 flex-grow overflow-y-auto" style="max-height: 350px;">
-                    <div id="commitmentsContainer" class="space-y-3">
-                        <!-- Commitments will be injected here -->
-                    </div>
+
+                    <div id="commitmentsContainer" class="space-y-3"></div>
+
                 </div>
+
             </div>
 
         </div>
 
     </main>
 
-    <!-- Custom Modal/Toast for Notifications -->
-    <div id="toast" class="fixed bottom-4 right-4 p-4 rounded-lg text-white shadow-xl opacity-0 pointer-events-none transition-opacity duration-300 z-50 transform translate-y-2 flex items-center gap-3 bg-green-600">
+    <!-- TOAST -->
+
+    <div id="toast"
+
+         class="fixed bottom-4 right-4 p-4 rounded-lg text-white shadow-xl opacity-0 pointer-events-none transition-opacity duration-300 z-50 transform translate-y-2 flex items-center gap-3 bg-green-600">
+
         <i id="toastIcon" class="fa-solid fa-circle-check text-xl"></i>
+
         <span id="toastMsg" class="font-medium"></span>
+
     </div>
 
     <script>
-        // === STORAGE OFFLINE CON LOCALSTORAGE ===
-        
-        // Dati in memoria
+
+        /************************************************************
+
+         * STORAGE KEYS
+
+         ************************************************************/
+
+        const STORAGE_KEYS = {
+
+            shifts: 'impegniAlly_shiftsData',
+
+            commitments: 'impegniAlly_commitmentsData',
+
+            baseSalary: 'impegniAlly_baseSalary'
+
+        };
+
+        /************************************************************
+
+         * DATI
+
+         ************************************************************/
+
         let shiftsData = [];
+
         let commitmentsData = [];
+
         let baseSalary = 0;
 
-        // --- Elementi UI ---
+        /************************************************************
+
+         * ELEMENTI UI
+
+         ************************************************************/
+
         const shiftIdInput = document.getElementById('shiftId');
+
         const shiftDateInput = document.getElementById('shiftDate');
+
         const shiftLocationInput = document.getElementById('shiftLocation');
+
         const shiftTypeInput = document.getElementById('shiftType');
+
         const shiftIsExtraCheckbox = document.getElementById('shiftIsExtra');
+
         const extraAmountContainer = document.getElementById('extraAmountContainer');
+
         const shiftExtraAmountInput = document.getElementById('shiftExtraAmount');
+
         const saveShiftBtn = document.getElementById('saveShiftBtn');
+
         const cancelShiftEditBtn = document.getElementById('cancelShiftEditBtn');
+
         const shiftsContainer = document.getElementById('shiftsContainer');
 
         const commIdInput = document.getElementById('commId');
+
         const commTitleInput = document.getElementById('commTitle');
+
         const commDateInput = document.getElementById('commDate');
+
         const commStartInput = document.getElementById('commStart');
+
         const commEndInput = document.getElementById('commEnd');
+
         const saveCommBtn = document.getElementById('saveCommBtn');
+
         const cancelCommEditBtn = document.getElementById('cancelCommEditBtn');
+
         const commitmentsContainer = document.getElementById('commitmentsContainer');
 
         const baseSalaryInput = document.getElementById('baseSalaryInput');
+
         const displayTotExtra = document.getElementById('displayTotExtra');
+
         const displayTotSalary = document.getElementById('displayTotSalary');
 
         const monthFilter = document.getElementById('monthFilter');
+
         const yearFilter = document.getElementById('yearFilter');
 
-        // --- LocalStorage Functions ---
+        /************************************************************
+
+         * COSTANTI
+
+         ************************************************************/
+
+        const monthNames = [
+
+            'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+
+            'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
+
+        ];
+
+        /************************************************************
+
+         * UTILS
+
+         ************************************************************/
+
+        function generateId() {
+
+            return '_' + Math.random().toString(36).slice(2, 11);
+
+        }
+
+        function normalizeText(text = '') {
+
+            return String(text)
+
+                .toLowerCase()
+
+                .normalize('NFD')
+
+                .replace(/[\u0300-\u036f]/g, '');
+
+        }
+
+        function formatDateIT(dateStr) {
+
+            const d = new Date(dateStr);
+
+            return d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+        }
+
         function saveToStorage() {
-            localStorage.setItem('shiftsData', JSON.stringify(shiftsData));
-            localStorage.setItem('commitmentsData', JSON.stringify(commitmentsData));
-            localStorage.setItem('baseSalary', baseSalary.toString());
+
+            localStorage.setItem(STORAGE_KEYS.shifts, JSON.stringify(shiftsData));
+
+            localStorage.setItem(STORAGE_KEYS.commitments, JSON.stringify(commitmentsData));
+
+            localStorage.setItem(STORAGE_KEYS.baseSalary, String(baseSalary));
+
         }
 
         function loadFromStorage() {
-            shiftsData = JSON.parse(localStorage.getItem('shiftsData') || '[]');
-            commitmentsData = JSON.parse(localStorage.getItem('commitmentsData') || '[]');
-            baseSalary = parseFloat(localStorage.getItem('baseSalary') || '0');
-            
-            if (baseSalary > 0) {
-                baseSalaryInput.value = baseSalary;
+
+            try {
+
+                shiftsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.shifts) || '[]');
+
+                commitmentsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.commitments) || '[]');
+
+                baseSalary = parseFloat(localStorage.getItem(STORAGE_KEYS.baseSalary) || '0') || 0;
+
+            } catch (err) {
+
+                shiftsData = [];
+
+                commitmentsData = [];
+
+                baseSalary = 0;
+
             }
-            
+
+            if (baseSalary > 0) {
+
+                baseSalaryInput.value = baseSalary;
+
+            }
+
+            sortShifts();
+
+            sortCommitments();
+
             updateFilters();
+
             renderShifts();
+
             renderCommitments();
+
             calculateTotals();
+
         }
 
-        function generateId() {
-            return '_' + Math.random().toString(36).substr(2, 9);
+        function sortShifts() {
+
+            shiftsData.sort((a, b) => {
+
+                const da = new Date(a.date).getTime();
+
+                const db = new Date(b.date).getTime();
+
+                if (da !== db) return da - db;
+
+                const order = { 'Mattina': 1, 'Pomeriggio': 2, 'Malattia': 3 };
+
+                return (order[a.type] || 99) - (order[b.type] || 99);
+
+            });
+
         }
 
-        // Mesi italiani
-        const monthNames = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 
-                          'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+        function sortCommitments() {
 
-        // Aggiorna i filtri mese/anno
+            commitmentsData.sort((a, b) => {
+
+                const aDate = new Date(`${a.date}T${a.start || '00:00'}`).getTime();
+
+                const bDate = new Date(`${b.date}T${b.start || '00:00'}`).getTime();
+
+                return aDate - bDate;
+
+            });
+
+        }
+
+        function showToast(msg, type = 'success') {
+
+            const toast = document.getElementById('toast');
+
+            const toastIcon = document.getElementById('toastIcon');
+
+            const toastMsg = document.getElementById('toastMsg');
+
+            toastMsg.innerText = msg;
+
+            if (type === 'error') {
+
+                toast.classList.remove('bg-green-600');
+
+                toast.classList.add('bg-red-500');
+
+                toastIcon.className = 'fa-solid fa-circle-exclamation text-xl';
+
+            } else {
+
+                toast.classList.remove('bg-red-500');
+
+                toast.classList.add('bg-green-600');
+
+                toastIcon.className = 'fa-solid fa-circle-check text-xl';
+
+            }
+
+            toast.style.opacity = '1';
+
+            toast.style.transform = 'translateY(-10px)';
+
+            setTimeout(() => {
+
+                toast.style.opacity = '0';
+
+                toast.style.transform = 'translateY(10px)';
+
+            }, 3000);
+
+        }
+
+        function downloadFile(content, fileName, mimeType) {
+
+            const blob = new Blob([content], { type: mimeType });
+
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+
+            a.href = url;
+
+            a.download = fileName;
+
+            document.body.appendChild(a);
+
+            a.click();
+
+            document.body.removeChild(a);
+
+            URL.revokeObjectURL(url);
+
+        }
+
+        /************************************************************
+
+         * LOGICA RICONOSCIMENTO TURNO DA IMPORT
+
+         ************************************************************/
+
+        function detectLocationFromText(text) {
+
+            const t = normalizeText(text);
+
+            if (
+
+                t.includes('planet') ||
+
+                t.includes('planetwin') ||
+
+                t.includes('planetwin365') ||
+
+                t.includes('pianet') // piccola tolleranza typo
+
+            ) {
+
+                return 'Planetwin365';
+
+            }
+
+            if (
+
+                t.includes('goldbet') ||
+
+                t.includes('stazione')
+
+            ) {
+
+                return 'Goldbet Stazione';
+
+            }
+
+            return 'Goldbet Stazione';
+
+        }
+
+        function detectShiftType(summary = '', description = '', location = '', startDate = null, endDate = null) {
+
+            const text = normalizeText(`${summary} ${description} ${location}`);
+
+            if (text.includes('malattia')) return 'Malattia';
+
+            if (text.includes('mattina')) return 'Mattina';
+
+            if (text.includes('pomeriggio')) return 'Pomeriggio';
+
+            if (startDate) {
+
+                const hour = startDate.getHours();
+
+                if (hour < 14) return 'Mattina';
+
+                return 'Pomeriggio';
+
+            }
+
+            return 'Mattina';
+
+        }
+
+        function detectExtra(description = '', summary = '') {
+
+            const text = normalizeText(`${summary} ${description}`);
+
+            return text.includes('extra');
+
+        }
+
+        function extractExtraAmount(text = '') {
+
+            const clean = text.replace(',', '.');
+
+            const match = clean.match(/(?:€|euro|importo|extra)\s*[:\-]?\s*(\d+(?:\.\d+)?)/i);
+
+            return match ? parseFloat(match[1]) || 0 : 0;
+
+        }
+
+        function createShiftObject({ date, location, type, isExtra = false, extraAmount = 0 }) {
+
+            return {
+
+                id: generateId(),
+
+                date,
+
+                location,
+
+                type,
+
+                isExtra,
+
+                extraAmount: Number(extraAmount) || 0
+
+            };
+
+        }
+
+        /************************************************************
+
+         * FILTRI
+
+         ************************************************************/
+
         function updateFilters() {
+
             const months = new Set();
+
             const years = new Set();
 
             shiftsData.forEach(s => {
+
                 const date = new Date(s.date);
+
+                if (isNaN(date)) return;
+
                 const year = date.getFullYear();
+
                 const month = date.getMonth();
+
                 months.add(`${year}-${month}`);
-                years.add(year.toString());
+
+                years.add(String(year));
+
             });
 
-            // Popola i mesi
             monthFilter.innerHTML = '<option value="">Tutti i mesi</option>';
+
             Array.from(months).sort().reverse().forEach(monthYear => {
+
                 const [year, month] = monthYear.split('-');
+
                 const option = document.createElement('option');
+
                 option.value = monthYear;
+
                 option.textContent = `${monthNames[parseInt(month)]} ${year}`;
+
                 monthFilter.appendChild(option);
+
             });
 
-            // Popola gli anni
             yearFilter.innerHTML = '<option value="">Tutti gli anni</option>';
+
             Array.from(years).sort().reverse().forEach(year => {
+
                 const option = document.createElement('option');
+
                 option.value = year;
+
                 option.textContent = year;
+
                 yearFilter.appendChild(option);
+
             });
+
         }
 
-        // Filtra turni per mese/anno
         function getFilteredShifts() {
-            let filtered = shiftsData;
+
+            let filtered = [...shiftsData];
 
             if (monthFilter.value) {
-                const [year, month] = monthFilter.value.split('-');
+
+                const [year, month] = monthFilter.value.split('-').map(Number);
+
                 filtered = filtered.filter(s => {
-                    const date = new Date(s.date);
-                    return date.getFullYear() === parseInt(year) && date.getMonth() === parseInt(month);
+
+                    const d = new Date(s.date);
+
+                    return d.getFullYear() === year && d.getMonth() === month;
+
                 });
+
             } else if (yearFilter.value) {
+
                 const year = parseInt(yearFilter.value);
+
                 filtered = filtered.filter(s => {
-                    const date = new Date(s.date);
-                    return date.getFullYear() === year;
+
+                    const d = new Date(s.date);
+
+                    return d.getFullYear() === year;
+
                 });
+
             }
 
             return filtered;
+
         }
 
-        // --- Init ---
-        window.addEventListener('load', () => {
-            loadFromStorage();
-        });
+        /************************************************************
 
-        // --- Event Listeners ---
-        
-        // Listener per i filtri
-        monthFilter.addEventListener('change', () => {
-            yearFilter.value = '';
-            renderShifts();
-        });
+         * RENDER TURNI
 
-        yearFilter.addEventListener('change', () => {
-            monthFilter.value = '';
-            renderShifts();
-        });
+         ************************************************************/
 
-        // Mostra/Nascondi input importo extra
-        shiftIsExtraCheckbox.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                extraAmountContainer.classList.remove('hidden');
-            } else {
-                extraAmountContainer.classList.add('hidden');
-                shiftExtraAmountInput.value = '';
+        function renderShifts() {
+
+            const filteredData = getFilteredShifts();
+
+            if (filteredData.length === 0) {
+
+                shiftsContainer.innerHTML = '<div class="text-center text-gray-500 py-6">Nessun turno per questo periodo.</div>';
+
+                return;
+
             }
-        });
 
-        // Gestione cambio tipo turno
-        shiftTypeInput.addEventListener('change', (e) => {
-            if (e.target.value === 'Malattia') {
-                shiftLocationInput.value = 'Nessuna (Malattia)';
-                shiftLocationInput.disabled = true;
-                shiftIsExtraCheckbox.checked = false;
-                shiftIsExtraCheckbox.disabled = true;
-                extraAmountContainer.classList.add('hidden');
-            } else {
-                if(shiftLocationInput.value === 'Nessuna (Malattia)') {
-                    shiftLocationInput.value = 'Goldbet Stazione';
+            const grouped = {};
+
+            filteredData.forEach(s => {
+
+                const date = new Date(s.date);
+
+                const year = date.getFullYear();
+
+                const month = date.getMonth();
+
+                const key = `${year}-${month}`;
+
+                if (!grouped[key]) {
+
+                    grouped[key] = { year, month, shifts: [] };
+
                 }
-                shiftLocationInput.disabled = false;
-                shiftIsExtraCheckbox.disabled = false;
-            }
-        });
 
-        // Salva/Aggiorna Turno
-        saveShiftBtn.addEventListener('click', () => {
+                grouped[key].shifts.push(s);
+
+            });
+
+            let html = '';
+
+            Object.keys(grouped).sort().reverse().forEach(key => {
+
+                const group = grouped[key];
+
+                const monthYear = `${monthNames[group.month]} ${group.year}`;
+
+                html += `
+
+                    <div class="mb-6">
+
+                        <h3 class="font-bold text-lg text-lottoBlue mb-3">📅 ${monthYear}</h3>
+
+                        <div class="space-y-2">
+
+                `;
+
+                group.shifts.forEach(s => {
+
+                    const dateObj = new Date(s.date);
+
+                    const dateStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+                    const dayName = dateObj.toLocaleDateString('it-IT', { weekday: 'short' });
+
+                    let icon = '';
+
+                    let colorClass = '';
+
+                    let timeStr = '';
+
+                    if (s.type === 'Malattia') {
+
+                        icon = 'fa-bed text-red-500';
+
+                        colorClass = 'border-red-400 bg-red-50';
+
+                        timeStr = 'Intera giornata';
+
+                    } else if (s.type === 'Mattina') {
+
+                        icon = 'fa-sun text-yellow-500';
+
+                        colorClass = 'border-yellow-300 bg-white';
+
+                        timeStr = '09:00 - 13:30';
+
+                    } else {
+
+                        icon = 'fa-moon text-blue-500';
+
+                        colorClass = 'border-blue-300 bg-white';
+
+                        timeStr = '15:00 - 20:30';
+
+                    }
+
+                    const extraBadge = s.isExtra
+
+                        ? `<span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-semibold ml-2"><i class="fa-solid fa-euro-sign"></i> €${Number(s.extraAmount || 0).toFixed(2)}</span>`
+
+                        : '';
+
+                    html += `
+
+                        <div class="p-3 border-l-4 ${colorClass} rounded shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 fade-in">
+
+                            <div>
+
+                                <div class="flex items-center gap-2 flex-wrap">
+
+                                    <span class="font-bold text-gray-800">${dateStr} <span class="text-sm text-gray-500">${dayName}</span></span>
+
+                                    ${extraBadge}
+
+                                </div>
+
+                                <div class="text-sm text-gray-600 mt-1">
+
+                                    <i class="fa-solid ${icon} w-5 text-center"></i>
+
+                                    <span class="font-medium">${s.type}</span>
+
+                                    ${s.type !== 'Malattia' ? `presso <b>${s.location}</b>` : ''}
+
+                                </div>
+
+                                <div class="text-xs text-gray-500 mt-1">
+
+                                    <i class="fa-regular fa-clock"></i> ${timeStr}
+
+                                </div>
+
+                            </div>
+
+                            <div class="flex gap-2 w-full sm:w-auto justify-end mt-2 sm:mt-0">
+
+                                <button onclick="editShift('${s.id}')" class="text-blue-500 hover:bg-blue-100 p-2 rounded transition" title="Modifica">
+
+                                    <i class="fa-solid fa-pen"></i>
+
+                                </button>
+
+                                <button onclick="deleteShift('${s.id}')" class="text-red-500 hover:bg-red-100 p-2 rounded transition" title="Elimina">
+
+                                    <i class="fa-solid fa-trash"></i>
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    `;
+
+                });
+
+                html += `</div></div>`;
+
+            });
+
+            shiftsContainer.innerHTML = html;
+
+        }
+
+        /************************************************************
+
+         * RENDER IMPEGNI
+
+         ************************************************************/
+
+        function renderCommitments() {
+
+            if (commitmentsData.length === 0) {
+
+                commitmentsContainer.innerHTML = '<div class="text-center text-gray-500 py-6 text-sm">Nessun impegno personale.</div>';
+
+                return;
+
+            }
+
+            let html = '';
+
+            commitmentsData.forEach(c => {
+
+                const dateObj = new Date(c.date);
+
+                const dateStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
+
+                const timeStr = (c.start && c.end)
+
+                    ? `${c.start} - ${c.end}`
+
+                    : (c.start ? `Dalle ${c.start}` : 'Orario da definire');
+
+                html += `
+
+                    <div class="p-3 border-l-4 border-lottoYellow bg-yellow-50/50 rounded shadow-sm flex justify-between items-center fade-in">
+
+                        <div class="w-full">
+
+                            <div class="font-semibold text-gray-800">${c.title}</div>
+
+                            <div class="text-xs text-gray-600 mt-1 flex gap-3 flex-wrap">
+
+                                <span><i class="fa-regular fa-calendar"></i> ${dateStr}</span>
+
+                                <span><i class="fa-regular fa-clock"></i> ${timeStr}</span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-1">
+
+                            <button onclick="editComm('${c.id}')" class="text-gray-500 hover:text-blue-500 p-1">
+
+                                <i class="fa-solid fa-pen text-sm"></i>
+
+                            </button>
+
+                            <button onclick="deleteComm('${c.id}')" class="text-gray-500 hover:text-red-500 p-1">
+
+                                <i class="fa-solid fa-trash text-sm"></i>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            });
+
+            commitmentsContainer.innerHTML = html;
+
+        }
+
+        /************************************************************
+
+         * TOTALI
+
+         ************************************************************/
+
+        function calculateTotals() {
+
+            let totalExtras = 0;
+
+            shiftsData.forEach(s => {
+
+                if (s.isExtra && !isNaN(s.extraAmount)) {
+
+                    totalExtras += parseFloat(s.extraAmount || 0);
+
+                }
+
+            });
+
+            const totalSalary = (parseFloat(baseSalary || 0) + totalExtras);
+
+            displayTotExtra.innerText = totalExtras.toFixed(2);
+
+            displayTotSalary.innerText = totalSalary.toFixed(2);
+
+        }
+
+        /************************************************************
+
+         * RESET FORM
+
+         ************************************************************/
+
+        function resetShiftForm() {
+
+            shiftIdInput.value = '';
+
+            shiftDateInput.value = '';
+
+            shiftLocationInput.value = 'Goldbet Stazione';
+
+            shiftLocationInput.disabled = false;
+
+            shiftTypeInput.value = 'Mattina';
+
+            shiftIsExtraCheckbox.checked = false;
+
+            shiftIsExtraCheckbox.disabled = false;
+
+            extraAmountContainer.classList.add('hidden');
+
+            shiftExtraAmountInput.value = '';
+
+            saveShiftBtn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Aggiungi Turno';
+
+            saveShiftBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+
+            saveShiftBtn.classList.add('bg-lottoBlue', 'hover:bg-lottoDark');
+
+            cancelShiftEditBtn.classList.add('hidden');
+
+        }
+
+        function resetCommForm() {
+
+            commIdInput.value = '';
+
+            commTitleInput.value = '';
+
+            commDateInput.value = '';
+
+            commStartInput.value = '';
+
+            commEndInput.value = '';
+
+            saveCommBtn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Aggiungi Impegno';
+
+            saveCommBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+
+            saveCommBtn.classList.add('bg-lottoYellow', 'hover:bg-yellow-500');
+
+            cancelCommEditBtn.classList.add('hidden');
+
+        }
+
+        /************************************************************
+
+         * CRUD TURNI
+
+         ************************************************************/
+
+        function upsertShift() {
+
             const date = shiftDateInput.value;
+
             const location = shiftLocationInput.value;
+
             const type = shiftTypeInput.value;
+
             const isExtra = shiftIsExtraCheckbox.checked;
+
             const extraAmount = parseFloat(shiftExtraAmountInput.value) || 0;
+
             const id = shiftIdInput.value;
 
             if (!date) {
-                showToast("Amo, inserisci almeno la data!", "error");
+
+                showToast('Amo, inserisci almeno la data!', 'error');
+
                 return;
+
             }
 
             const shiftObj = { date, location, type, isExtra, extraAmount };
 
             if (id) {
+
                 const idx = shiftsData.findIndex(s => s.id === id);
+
                 if (idx > -1) {
+
                     shiftsData[idx] = { ...shiftsData[idx], ...shiftObj };
-                    showToast("Turno aggiornato con successo!");
+
+                    showToast('Turno aggiornato con successo!');
+
                 }
+
             } else {
+
                 shiftsData.push({ id: generateId(), ...shiftObj });
-                showToast("Nuovo turno aggiunto! Bravissima!");
+
+                showToast('Nuovo turno aggiunto! 💛');
+
             }
 
-            shiftsData.sort((a, b) => new Date(a.date) - new Date(b.date));
-            saveToStorage();
-            updateFilters();
-            renderShifts();
-            calculateTotals();
-            resetShiftForm();
-        });
+            sortShifts();
 
-        // Salva/Aggiorna Impegno
-        saveCommBtn.addEventListener('click', () => {
+            saveToStorage();
+
+            updateFilters();
+
+            renderShifts();
+
+            calculateTotals();
+
+            resetShiftForm();
+
+        }
+
+        function upsertCommitment() {
+
             const title = commTitleInput.value.trim();
+
             const date = commDateInput.value;
+
             const start = commStartInput.value;
+
             const end = commEndInput.value;
+
             const id = commIdInput.value;
 
             if (!title || !date) {
-                showToast("Inserisci cosa devi fare e la data!", "error");
+
+                showToast('Inserisci cosa devi fare e la data!', 'error');
+
                 return;
+
             }
 
             const commObj = { title, date, start, end };
 
             if (id) {
+
                 const idx = commitmentsData.findIndex(c => c.id === id);
+
                 if (idx > -1) {
+
                     commitmentsData[idx] = { ...commitmentsData[idx], ...commObj };
-                    showToast("Impegno aggiornato!");
+
+                    showToast('Impegno aggiornato!');
+
                 }
+
             } else {
+
                 commitmentsData.push({ id: generateId(), ...commObj });
-                showToast("Impegno personale aggiunto!");
+
+                showToast('Impegno personale aggiunto!');
+
             }
 
-            commitmentsData.sort((a, b) => new Date(a.date) - new Date(b.date));
+            sortCommitments();
+
             saveToStorage();
+
             renderCommitments();
+
             resetCommForm();
-        });
 
-        // Aggiornamento Stipendio Base
-        let salaryTimeout;
-        baseSalaryInput.addEventListener('input', (e) => {
-            const val = parseFloat(e.target.value) || 0;
-            baseSalary = val;
-            calculateTotals();
-            
-            clearTimeout(salaryTimeout);
-            salaryTimeout = setTimeout(() => {
-                saveToStorage();
-            }, 500);
-        });
+        }
 
-        // Eliminazioni
-        window.deleteShift = (id) => {
+        window.deleteShift = function(id) {
+
             shiftsData = shiftsData.filter(s => s.id !== id);
+
             saveToStorage();
+
             updateFilters();
+
             renderShifts();
+
             calculateTotals();
-            showToast("Turno eliminato.", "success");
+
+            showToast('Turno eliminato.');
+
         };
 
-        window.deleteComm = (id) => {
+        window.deleteComm = function(id) {
+
             commitmentsData = commitmentsData.filter(c => c.id !== id);
+
             saveToStorage();
+
             renderCommitments();
-            showToast("Impegno eliminato.", "success");
+
+            showToast('Impegno eliminato.');
+
         };
 
-        // Modifica (Pre-popola form)
-        window.editShift = (id) => {
+        window.editShift = function(id) {
+
             const s = shiftsData.find(x => x.id === id);
+
             if (!s) return;
-            
+
             shiftIdInput.value = s.id;
+
             shiftDateInput.value = s.date;
+
             shiftLocationInput.value = s.location;
-            shiftLocationInput.disabled = (s.type === 'Malattia');
+
             shiftTypeInput.value = s.type;
-            shiftIsExtraCheckbox.checked = s.isExtra;
-            shiftIsExtraCheckbox.disabled = (s.type === 'Malattia');
-            
-            if (s.isExtra) {
-                extraAmountContainer.classList.remove('hidden');
-                shiftExtraAmountInput.value = s.extraAmount;
-            } else {
+
+            shiftIsExtraCheckbox.checked = !!s.isExtra;
+
+            shiftExtraAmountInput.value = s.isExtra ? (s.extraAmount || '') : '';
+
+            if (s.type === 'Malattia') {
+
+                shiftLocationInput.value = 'Nessuna (Malattia)';
+
+                shiftLocationInput.disabled = true;
+
+                shiftIsExtraCheckbox.checked = false;
+
+                shiftIsExtraCheckbox.disabled = true;
+
                 extraAmountContainer.classList.add('hidden');
-                shiftExtraAmountInput.value = '';
+
+            } else {
+
+                shiftLocationInput.disabled = false;
+
+                shiftIsExtraCheckbox.disabled = false;
+
+                if (s.isExtra) {
+
+                    extraAmountContainer.classList.remove('hidden');
+
+                } else {
+
+                    extraAmountContainer.classList.add('hidden');
+
+                }
+
             }
 
             saveShiftBtn.innerHTML = '<i class="fa-solid fa-save mr-1"></i> Aggiorna Turno';
-            saveShiftBtn.classList.replace('bg-lottoBlue', 'bg-green-600');
-            saveShiftBtn.classList.replace('hover:bg-lottoDark', 'hover:bg-green-700');
+
+            saveShiftBtn.classList.remove('bg-lottoBlue', 'hover:bg-lottoDark');
+
+            saveShiftBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+
             cancelShiftEditBtn.classList.remove('hidden');
-            
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
+
         };
 
-        window.editComm = (id) => {
+        window.editComm = function(id) {
+
             const c = commitmentsData.find(x => x.id === id);
+
             if (!c) return;
-            
+
             commIdInput.value = c.id;
+
             commTitleInput.value = c.title;
+
             commDateInput.value = c.date;
+
             commStartInput.value = c.start || '';
+
             commEndInput.value = c.end || '';
 
             saveCommBtn.innerHTML = '<i class="fa-solid fa-save mr-1"></i> Aggiorna Impegno';
-            saveCommBtn.classList.replace('bg-lottoYellow', 'bg-green-500');
+
+            saveCommBtn.classList.remove('bg-lottoYellow', 'hover:bg-yellow-500');
+
+            saveCommBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+
             cancelCommEditBtn.classList.remove('hidden');
-            
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
+
         };
 
-        // Reset Forms
-        cancelShiftEditBtn.addEventListener('click', resetShiftForm);
-        cancelCommEditBtn.addEventListener('click', resetCommForm);
+        window.deleteAllShifts = function() {
 
-        function resetShiftForm() {
-            shiftIdInput.value = '';
-            shiftDateInput.value = '';
-            shiftLocationInput.value = 'Goldbet Stazione';
-            shiftLocationInput.disabled = false;
-            shiftTypeInput.value = 'Mattina';
-            shiftIsExtraCheckbox.checked = false;
-            shiftIsExtraCheckbox.disabled = false;
-            extraAmountContainer.classList.add('hidden');
-            shiftExtraAmountInput.value = '';
-            
-            saveShiftBtn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Aggiungi Turno';
-            saveShiftBtn.classList.replace('bg-green-600', 'bg-lottoBlue');
-            saveShiftBtn.classList.replace('hover:bg-green-700', 'hover:bg-lottoDark');
-            cancelShiftEditBtn.classList.add('hidden');
-        }
-
-        function resetCommForm() {
-            commIdInput.value = '';
-            commTitleInput.value = '';
-            commDateInput.value = '';
-            commStartInput.value = '';
-            commEndInput.value = '';
-
-            saveCommBtn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Aggiungi Impegno';
-            saveCommBtn.classList.replace('bg-green-500', 'bg-lottoYellow');
-            cancelCommEditBtn.classList.add('hidden');
-        }
-
-        // --- Rendering ---
-        function renderShifts() {
-            const filteredData = getFilteredShifts();
-            
-            if (filteredData.length === 0) {
-                shiftsContainer.innerHTML = '<div class="text-center text-gray-500 py-6">Nessun turno per questo periodo.</div>';
-                return;
-            }
-
-            // Raggruppa per mese/anno
-            const grouped = {};
-            filteredData.forEach(s => {
-                const date = new Date(s.date);
-                const year = date.getFullYear();
-                const month = date.getMonth();
-                const key = `${year}-${month}`;
-                
-                if (!grouped[key]) {
-                    grouped[key] = { year, month, shifts: [] };
-                }
-                grouped[key].shifts.push(s);
-            });
-
-            let html = '';
-            
-            // Ordina i mesi in ordine decrescente
-            Object.keys(grouped).sort().reverse().forEach(key => {
-                const group = grouped[key];
-                const monthYear = `${monthNames[group.month]} ${group.year}`;
-                
-                html += `<div class="mb-6">
-                    <h3 class="font-bold text-lg text-lottoBlue mb-3">📅 ${monthYear}</h3>
-                    <div class="space-y-2">`;
-
-                group.shifts.forEach(s => {
-                    const dateObj = new Date(s.date);
-                    const dateStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                    const dayName = dateObj.toLocaleDateString('it-IT', { weekday: 'short' });
-                    
-                    let icon = '';
-                    let colorClass = '';
-                    let timeStr = '';
-                    
-                    if (s.type === 'Malattia') {
-                        icon = 'fa-bed text-red-500';
-                        colorClass = 'border-red-400 bg-red-50';
-                        timeStr = 'Intera Giornata';
-                    } else if (s.type === 'Mattina') {
-                        icon = 'fa-sun text-yellow-500';
-                        colorClass = 'border-yellow-300 bg-white';
-                        timeStr = '09:00 - 13:30';
-                    } else {
-                        icon = 'fa-moon text-blue-500';
-                        colorClass = 'border-blue-300 bg-white';
-                        timeStr = '15:00 - 20:30';
-                    }
-
-                    const extraBadge = s.isExtra ? `<span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-semibold ml-2"><i class="fa-solid fa-euro-sign"></i> €${s.extraAmount.toFixed(2)}</span>` : '';
-
-                    html += `
-                    <div class="p-3 border-l-4 ${colorClass} rounded shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 fade-in">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-gray-800">${dateStr} <span class="text-sm text-gray-500">${dayName}</span></span>
-                                ${extraBadge}
-                            </div>
-                            <div class="text-sm text-gray-600 mt-1">
-                                <i class="fa-solid ${icon} w-5 text-center"></i> 
-                                <span class="font-medium">${s.type}</span> 
-                                ${s.type !== 'Malattia' ? `presso <b>${s.location}</b>` : ''}
-                            </div>
-                            <div class="text-xs text-gray-500 mt-1"><i class="fa-regular fa-clock"></i> ${timeStr}</div>
-                        </div>
-                        <div class="flex gap-2 w-full sm:w-auto justify-end mt-2 sm:mt-0">
-                            <button onclick="editShift('${s.id}')" class="text-blue-500 hover:bg-blue-100 p-2 rounded transition" title="Modifica"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteShift('${s.id}')" class="text-red-500 hover:bg-red-100 p-2 rounded transition" title="Elimina"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </div>
-                    `;
-                });
-
-                html += `</div></div>`;
-            });
-
-            shiftsContainer.innerHTML = html;
-        }
-
-        function renderCommitments() {
-            if (commitmentsData.length === 0) {
-                commitmentsContainer.innerHTML = '<div class="text-center text-gray-500 py-6 text-sm">Nessun impegno personale.</div>';
-                return;
-            }
-
-            let html = '';
-            commitmentsData.forEach(c => {
-                const dateObj = new Date(c.date);
-                const dateStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
-                
-                const timeStr = (c.start && c.end) ? `${c.start} - ${c.end}` : (c.start ? `Dalle ${c.start}` : 'Orario da definire');
-
-                html += `
-                <div class="p-3 border-l-4 border-lottoYellow bg-yellow-50/50 rounded shadow-sm flex justify-between items-center fade-in">
-                    <div class="w-full">
-                        <div class="font-semibold text-gray-800">${c.title}</div>
-                        <div class="text-xs text-gray-600 mt-1 flex gap-3">
-                            <span><i class="fa-regular fa-calendar"></i> ${dateStr}</span>
-                            <span><i class="fa-regular fa-clock"></i> ${timeStr}</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col sm:flex-row gap-1">
-                        <button onclick="editComm('${c.id}')" class="text-gray-500 hover:text-blue-500 p-1"><i class="fa-solid fa-pen text-sm"></i></button>
-                        <button onclick="deleteComm('${c.id}')" class="text-gray-500 hover:text-red-500 p-1"><i class="fa-solid fa-trash text-sm"></i></button>
-                    </div>
-                </div>
-                `;
-            });
-            commitmentsContainer.innerHTML = html;
-        }
-
-        // --- Calcoli ---
-        function calculateTotals() {
-            let totalExtras = 0;
-            shiftsData.forEach(s => {
-                if (s.isExtra && !isNaN(s.extraAmount)) {
-                    totalExtras += parseFloat(s.extraAmount);
-                }
-            });
-            
-            const totalSalary = parseFloat(baseSalary || 0) + totalExtras;
-
-            displayTotExtra.innerText = totalExtras.toFixed(2);
-            displayTotSalary.innerText = totalSalary.toFixed(2);
-        }
-
-        // --- Esportazioni ---
-        window.exportICS = () => {
-            if (shiftsData.length === 0) {
-                showToast("Nessun turno da esportare!", "error");
-                return;
-            }
-            
-            let ics = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Impegni Ally//IT\nCALSCALE:GREGORIAN\n";
-            
-            shiftsData.forEach(s => {
-                const dateObj = new Date(s.date);
-                const y = dateObj.getFullYear();
-                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const d = String(dateObj.getDate()).padStart(2, '0');
-                const dateStr = `${y}${m}${d}`;
-
-                let startT = "090000";
-                let endT = "133000";
-                
-                if (s.type === 'Pomeriggio') {
-                    startT = "150000";
-                    endT = "203000";
-                }
-
-                ics += "BEGIN:VEVENT\n";
-                ics += `UID:${s.id}@impegnially.com\n`;
-                ics += `DTSTAMP:${dateStr}T000000Z\n`;
-                
-                if (s.type === 'Malattia') {
-                    ics += `DTSTART;VALUE=DATE:${dateStr}\n`;
-                    ics += `SUMMARY:🤒 Malattia\n`;
-                } else {
-                    ics += `DTSTART:${dateStr}T${startT}\n`;
-                    ics += `DTEND:${dateStr}T${endT}\n`;
-                    ics += `SUMMARY:Lavoro - ${s.type}\n`;
-                    ics += `LOCATION:${s.location}\n`;
-                    let desc = s.isExtra ? `Turno Extra (Importo: ${s.extraAmount} EUR)` : 'Turno standard';
-                    ics += `DESCRIPTION:${desc}\n`;
-                }
-                ics += "END:VEVENT\n";
-            });
-
-            ics += "END:VCALENDAR";
-            downloadFile(ics, 'Turni_Ally.ics', 'text/calendar');
-        };
-
-        window.exportCSV = () => {
-            if (shiftsData.length === 0) {
-                showToast("Nessun turno da esportare!", "error");
-                return;
-            }
-
-            let csv = "Data,Sede,Tipo,E' Extra,Importo Extra\n";
-            shiftsData.forEach(s => {
-                const dateObj = new Date(s.date);
-                const d = dateObj.toLocaleDateString('it-IT');
-                const isExtraStr = s.isExtra ? "Si" : "No";
-                const amount = s.isExtra ? s.extraAmount : "0";
-                const loc = s.location.replace(/,/g, '');
-                
-                csv += `${d},${loc},${s.type},${isExtraStr},${amount}\n`;
-            });
-
-            downloadFile(csv, 'Turni_Ally.csv', 'text/csv');
-        };
-
-        // Backup completo
-        window.exportAllData = () => {
-            const allData = {
-                shiftsData,
-                commitmentsData,
-                baseSalary
-            };
-            const json = JSON.stringify(allData, null, 2);
-            downloadFile(json, 'Impegni_Ally_Backup.json', 'application/json');
-            showToast("Backup creato con successo!");
-        };
-
-        function downloadFile(content, fileName, mimeType) {
-            const blob = new Blob([content], { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast(`File ${fileName} scaricato!`, "success");
-        }
-
-        // --- Importazione File ---
-        document.getElementById('fileImport').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const content = event.target.result;
-                if (file.name.toLowerCase().endsWith('.ics')) {
-                    parseICS(content);
-                } else if (file.name.toLowerCase().endsWith('.csv')) {
-                    parseCSV(content);
-                } else {
-                    showToast("Amo, formato non supportato! Usa .ics o .csv", "error");
-                }
-                e.target.value = ''; 
-            };
-            reader.readAsText(file);
-        });
-
-        // Importa backup JSON
-        document.getElementById('importFile').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const data = JSON.parse(event.target.result);
-                    shiftsData = data.shiftsData || [];
-                    commitmentsData = data.commitmentsData || [];
-                    baseSalary = data.baseSalary || 0;
-                    
-                    baseSalaryInput.value = baseSalary > 0 ? baseSalary : '';
-                    saveToStorage();
-                    updateFilters();
-                    renderShifts();
-                    renderCommitments();
-                    calculateTotals();
-                    showToast("Backup ripristinato con successo! 💛");
-                } catch (err) {
-                    showToast("Errore nel ripristino del backup.", "error");
-                }
-                e.target.value = '';
-            };
-            reader.readAsText(file);
-        });
-
-        function parseICS(content) {
-            const events = content.split('BEGIN:VEVENT');
-            let importedCount = 0;
-
-            for (let i = 1; i < events.length; i++) {
-                const event = events[i];
-                const dtstartMatch = event.match(/DTSTART(?:;.*?)?:(\d{4})(\d{2})(\d{2})/);
-                if (!dtstartMatch) continue;
-                const date = `${dtstartMatch[1]}-${dtstartMatch[2]}-${dtstartMatch[3]}`;
-
-                const summaryMatch = event.match(/SUMMARY:(.*)/);
-                const summary = summaryMatch ? summaryMatch[1].trim().toLowerCase() : '';
-
-                let type = 'Mattina';
-                if (summary.includes('pomeriggio')) type = 'Pomeriggio';
-                else if (summary.includes('malattia')) type = 'Malattia';
-
-                const locMatch = event.match(/LOCATION:(.*)/);
-                const location = locMatch ? locMatch[1].trim() : 'Goldbet Stazione';
-
-                const descMatch = event.match(/DESCRIPTION:(.*)/);
-                const desc = descMatch ? descMatch[1].trim().toLowerCase() : '';
-                const isExtra = desc.includes('extra');
-                
-                let extraAmount = 0;
-                if (isExtra) {
-                    const amountMatch = desc.match(/importo:\s*([\d.]+)/);
-                    if (amountMatch) extraAmount = parseFloat(amountMatch[1]);
-                }
-
-                shiftsData.push({ id: generateId(), date, location, type, isExtra, extraAmount });
-                importedCount++;
-            }
-
-            if(importedCount > 0) {
-                shiftsData.sort((a, b) => new Date(a.date) - new Date(b.date));
-                saveToStorage();
-                updateFilters();
-                renderShifts();
-                calculateTotals();
-                showToast(`Importati ${importedCount} turni dal calendario! Bravissima! 💛`);
-            } else {
-                showToast(`Nessun turno trovato nel file!`, "error");
-            }
-        }
-
-        function parseCSV(content) {
-            const lines = content.split('\n');
-            let importedCount = 0;
-
-            for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
-                const cols = lines[i].split(',');
-                if (cols.length >= 3) {
-                    const dateParts = cols[0].trim().split('/');
-                    if (dateParts.length === 3) {
-                        const date = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
-                        const location = cols[1] ? cols[1].trim() : 'Goldbet Stazione';
-                        const type = cols[2] ? cols[2].trim() : 'Mattina';
-                        const isExtra = cols[3] && cols[3].trim().toLowerCase() === 'si';
-                        const extraAmount = cols[4] ? parseFloat(cols[4]) || 0 : 0;
-
-                        shiftsData.push({ id: generateId(), date, location, type, isExtra, extraAmount });
-                        importedCount++;
-                    }
-                }
-            }
-
-            shiftsData.sort((a, b) => new Date(a.date) - new Date(b.date));
-            saveToStorage();
-            updateFilters();
-            renderShifts();
-            calculateTotals();
-            showToast(`Importati ${importedCount} turni dal CSV!`);
-        }
-
-
-        window.deleteAllShifts = () => {
             if (!confirm('Sei sicura di voler cancellare TUTTI i turni? Questa operazione non può essere annullata.')) {
+
                 return;
+
             }
 
             shiftsData = [];
+
             saveToStorage();
+
             updateFilters();
+
             renderShifts();
+
             calculateTotals();
+
             showToast('Tutti i turni sono stati eliminati.');
+
         };
 
-        // --- Toast ---
-        function showToast(msg, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastIcon = document.getElementById('toastIcon');
-            const toastMsg = document.getElementById('toastMsg');
-            
-            toastMsg.innerText = msg;
-            
-            if (type === 'error') {
-                toast.classList.replace('bg-green-600', 'bg-red-500') || toast.classList.add('bg-red-500');
-                toastIcon.className = "fa-solid fa-circle-exclamation text-xl";
-            } else {
-                toast.classList.replace('bg-red-500', 'bg-green-600') || toast.classList.add('bg-green-600');
-                toastIcon.className = "fa-solid fa-circle-check text-xl";
+        /************************************************************
+
+         * EXPORT
+
+         ************************************************************/
+
+        window.exportICS = function() {
+
+            if (shiftsData.length === 0) {
+
+                showToast('Nessun turno da esportare!', 'error');
+
+                return;
+
             }
 
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateY(-10px)';
-            
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(10px)';
-            }, 3000);
+            let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Impegni Ally//IT\r\nCALSCALE:GREGORIAN\r\n';
+
+            shiftsData.forEach(s => {
+
+                const dateObj = new Date(s.date);
+
+                const y = dateObj.getFullYear();
+
+                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+
+                const d = String(dateObj.getDate()).padStart(2, '0');
+
+                const dateStr = `${y}${m}${d}`;
+
+                let startT = '090000';
+
+                let endT = '133000';
+
+                if (s.type === 'Pomeriggio') {
+
+                    startT = '150000';
+
+                    endT = '203000';
+
+                }
+
+                ics += 'BEGIN:VEVENT\r\n';
+
+                ics += `UID:${s.id}@impegnially.com\r\n`;
+
+                ics += `DTSTAMP:${dateStr}T000000Z\r\n`;
+
+                if (s.type === 'Malattia') {
+
+                    ics += `DTSTART;VALUE=DATE:${dateStr}\r\n`;
+
+                    ics += `SUMMARY:🤒 Malattia\r\n`;
+
+                    ics += `DESCRIPTION:Malattia\r\n`;
+
+                } else {
+
+                    ics += `DTSTART:${dateStr}T${startT}\r\n`;
+
+                    ics += `DTEND:${dateStr}T${endT}\r\n`;
+
+                    ics += `SUMMARY:Lavoro - ${s.type}\r\n`;
+
+                    ics += `LOCATION:${s.location}\r\n`;
+
+                    let desc = s.isExtra
+
+                        ? `Turno Extra - Importo: ${Number(s.extraAmount || 0).toFixed(2)} EUR`
+
+                        : 'Turno standard';
+
+                    ics += `DESCRIPTION:${desc}\r\n`;
+
+                }
+
+                ics += 'END:VEVENT\r\n';
+
+            });
+
+            ics += 'END:VCALENDAR';
+
+            downloadFile(ics, 'Turni_Ally.ics', 'text/calendar');
+
+            showToast('File ICS esportato!');
+
+        };
+
+        window.exportCSV = function() {
+
+            if (shiftsData.length === 0) {
+
+                showToast('Nessun turno da esportare!', 'error');
+
+                return;
+
+            }
+
+            let csv = 'Data,Sede,Tipo,E_Extra,Importo_Extra\n';
+
+            shiftsData.forEach(s => {
+
+                const dateObj = new Date(s.date);
+
+                const d = dateObj.toLocaleDateString('it-IT');
+
+                const loc = String(s.location || '').replace(/,/g, ' ');
+
+                const isExtraStr = s.isExtra ? 'Si' : 'No';
+
+                const amount = s.isExtra ? Number(s.extraAmount || 0) : 0;
+
+                csv += `${d},${loc},${s.type},${isExtraStr},${amount}\n`;
+
+            });
+
+            downloadFile(csv, 'Turni_Ally.csv', 'text/csv;charset=utf-8;');
+
+            showToast('File CSV esportato!');
+
+        };
+
+        window.exportAllData = function() {
+
+            const allData = {
+
+                shiftsData,
+
+                commitmentsData,
+
+                baseSalary
+
+            };
+
+            const json = JSON.stringify(allData, null, 2);
+
+            downloadFile(json, 'Impegni_Ally_Backup.json', 'application/json');
+
+            showToast('Backup creato con successo! 💛');
+
+        };
+
+        /************************************************************
+
+         * IMPORT BACKUP JSON
+
+         ************************************************************/
+
+        document.getElementById('importFile').addEventListener('change', (e) => {
+
+            const file = e.target.files[0];
+
+            if (!file) return;
+
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+
+                try {
+
+                    const data = JSON.parse(event.target.result);
+
+                    shiftsData = Array.isArray(data.shiftsData) ? data.shiftsData : [];
+
+                    commitmentsData = Array.isArray(data.commitmentsData) ? data.commitmentsData : [];
+
+                    baseSalary = parseFloat(data.baseSalary || 0) || 0;
+
+                    sortShifts();
+
+                    sortCommitments();
+
+                    saveToStorage();
+
+                    baseSalaryInput.value = baseSalary > 0 ? baseSalary : '';
+
+                    updateFilters();
+
+                    renderShifts();
+
+                    renderCommitments();
+
+                    calculateTotals();
+
+                    showToast('Backup ripristinato con successo! 💛');
+
+                } catch (err) {
+
+                    console.error(err);
+
+                    showToast('Errore nel ripristino del backup.', 'error');
+
+                }
+
+                e.target.value = '';
+
+            };
+
+            reader.readAsText(file);
+
+        });
+
+        /************************************************************
+
+         * IMPORT ICS / CSV
+
+         ************************************************************/
+
+        document.getElementById('fileImport').addEventListener('change', (e) => {
+
+            const file = e.target.files[0];
+
+            if (!file) return;
+
+            const name = file.name.toLowerCase();
+
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+
+                const content = event.target.result;
+
+                if (name.endsWith('.ics')) {
+
+                    parseICS(content);
+
+                } else if (name.endsWith('.csv')) {
+
+                    parseCSV(content);
+
+                } else {
+
+                    showToast('Formato non supportato. Usa .ics o .csv', 'error');
+
+                }
+
+                e.target.value = '';
+
+            };
+
+            reader.readAsText(file, 'utf-8');
+
+        });
+
+        function parseICS(content) {
+
+            try {
+
+                const rawEvents = content.split('BEGIN:VEVENT').slice(1);
+
+                let importedCount = 0;
+
+                rawEvents.forEach(block => {
+
+                    const event = block.split('END:VEVENT')[0] || block;
+
+                    const summaryMatch = event.match(/SUMMARY:(.*)/i);
+
+                    const locationMatch = event.match(/LOCATION:(.*)/i);
+
+                    const descMatch = event.match(/DESCRIPTION:(.*)/i);
+
+                    const summary = summaryMatch ? summaryMatch[1].trim() : '';
+
+                    const locationRaw = locationMatch ? locationMatch[1].trim() : '';
+
+                    const description = descMatch ? descMatch[1].trim() : '';
+
+                    // Data con ora
+
+                    const dtStartDateTime = event.match(/DTSTART(?:;[^:]+)?:(\d{8})T(\d{6})/i);
+
+                    const dtEndDateTime = event.match(/DTEND(?:;[^:]+)?:(\d{8})T(\d{6})/i);
+
+                    // Data senza ora (all day)
+
+                    const dtStartDateOnly = event.match(/DTSTART(?:;[^:]+)?:(\d{8})(?!T)/i);
+
+                    let date = '';
+
+                    let startDate = null;
+
+                    let endDate = null;
+
+                    if (dtStartDateTime) {
+
+                        const d = dtStartDateTime[1];
+
+                        const t = dtStartDateTime[2];
+
+                        date = `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`;
+
+                        startDate = new Date(`${date}T${t.slice(0,2)}:${t.slice(2,4)}:${t.slice(4,6)}`);
+
+                    } else if (dtStartDateOnly) {
+
+                        const d = dtStartDateOnly[1];
+
+                        date = `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`;
+
+                    }
+
+                    if (!date) return;
+
+                    if (dtEndDateTime) {
+
+                        const d = dtEndDateTime[1];
+
+                        const t = dtEndDateTime[2];
+
+                        const endDateStr = `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`;
+
+                        endDate = new Date(`${endDateStr}T${t.slice(0,2)}:${t.slice(2,4)}:${t.slice(4,6)}`);
+
+                    }
+
+                    const location = detectLocationFromText(`${locationRaw} ${summary} ${description}`);
+
+                    const type = detectShiftType(summary, description, locationRaw, startDate, endDate);
+
+                    const isExtra = detectExtra(description, summary);
+
+                    const extraAmount = isExtra ? extractExtraAmount(description + ' ' + summary) : 0;
+
+                    shiftsData.push(createShiftObject({
+
+                        date,
+
+                        location: type === 'Malattia' ? 'Nessuna (Malattia)' : location,
+
+                        type,
+
+                        isExtra: type === 'Malattia' ? false : isExtra,
+
+                        extraAmount: type === 'Malattia' ? 0 : extraAmount
+
+                    }));
+
+                    importedCount++;
+
+                });
+
+                if (importedCount === 0) {
+
+                    showToast('Nessun turno trovato nel file ICS.', 'error');
+
+                    return;
+
+                }
+
+                sortShifts();
+
+                saveToStorage();
+
+                updateFilters();
+
+                renderShifts();
+
+                calculateTotals();
+
+                showToast(`Importati ${importedCount} turni da ICS! 💛`);
+
+            } catch (err) {
+
+                console.error(err);
+
+                showToast('Errore durante l’import del file ICS.', 'error');
+
+            }
+
         }
 
+        function parseCSV(content) {
+
+            try {
+
+                const lines = content.split(/\r?\n/).filter(Boolean);
+
+                if (lines.length <= 1) {
+
+                    showToast('CSV vuoto o non valido.', 'error');
+
+                    return;
+
+                }
+
+                const header = lines[0].split(',').map(h => normalizeText(h.trim()));
+
+                let importedCount = 0;
+
+                // Mappa colonne se trova intestazioni "furbe"
+
+                const idxDate = header.findIndex(h => h.includes('data'));
+
+                const idxLocation = header.findIndex(h => h.includes('sede') || h.includes('location') || h.includes('posto'));
+
+                const idxType = header.findIndex(h => h.includes('tipo'));
+
+                const idxExtra = header.findIndex(h => h.includes('extra') && !h.includes('importo'));
+
+                const idxExtraAmount = header.findIndex(h => h.includes('importo'));
+
+                for (let i = 1; i < lines.length; i++) {
+
+                    const row = lines[i].trim();
+
+                    if (!row) continue;
+
+                    const cols = row.split(',');
+
+                    let dateRaw = idxDate >= 0 ? (cols[idxDate] || '').trim() : (cols[0] || '').trim();
+
+                    let locationRaw = idxLocation >= 0 ? (cols[idxLocation] || '').trim() : (cols[1] || '').trim();
+
+                    let typeRaw = idxType >= 0 ? (cols[idxType] || '').trim() : (cols[2] || '').trim();
+
+                    let extraRaw = idxExtra >= 0 ? (cols[idxExtra] || '').trim() : (cols[3] || '').trim();
+
+                    let extraAmountRaw = idxExtraAmount >= 0 ? (cols[idxExtraAmount] || '').trim() : (cols[4] || '').trim();
+
+                    if (!dateRaw) continue;
+
+                    // Data dd/mm/yyyy o yyyy-mm-dd
+
+                    let date = '';
+
+                    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateRaw)) {
+
+                        const [dd, mm, yyyy] = dateRaw.split('/');
+
+                        date = `${yyyy}-${mm}-${dd}`;
+
+                    } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateRaw)) {
+
+                        date = dateRaw;
+
+                    } else {
+
+                        continue;
+
+                    }
+
+                    const combinedText = `${locationRaw} ${typeRaw}`;
+
+                    let location = detectLocationFromText(combinedText);
+
+                    let type = 'Mattina';
+
+                    const t = normalizeText(typeRaw);
+
+                    if (t.includes('malattia')) type = 'Malattia';
+
+                    else if (t.includes('pomeriggio')) type = 'Pomeriggio';
+
+                    else if (t.includes('mattina')) type = 'Mattina';
+
+                    else {
+
+                        // Se nel CSV non c'è tipo, provo a dedurlo da parole/orari nel testo
+
+                        if (t.includes('15') || t.includes('16') || t.includes('17') || t.includes('18') || t.includes('19') || t.includes('20')) {
+
+                            type = 'Pomeriggio';
+
+                        } else {
+
+                            type = 'Mattina';
+
+                        }
+
+                    }
+
+                    let isExtra = false;
+
+                    const extraNorm = normalizeText(extraRaw);
+
+                    if (extraNorm === 'si' || extraNorm === 'sì' || extraNorm === 'true' || extraNorm.includes('extra')) {
+
+                        isExtra = true;
+
+                    }
+
+                    let extraAmount = 0;
+
+                    if (extraAmountRaw) {
+
+                        extraAmount = parseFloat(String(extraAmountRaw).replace(',', '.')) || 0;
+
+                    }
+
+                    shiftsData.push(createShiftObject({
+
+                        date,
+
+                        location: type === 'Malattia' ? 'Nessuna (Malattia)' : location,
+
+                        type,
+
+                        isExtra: type === 'Malattia' ? false : isExtra,
+
+                        extraAmount: type === 'Malattia' ? 0 : extraAmount
+
+                    }));
+
+                    importedCount++;
+
+                }
+
+                if (importedCount === 0) {
+
+                    showToast('Nessun turno trovato nel file CSV.', 'error');
+
+                    return;
+
+                }
+
+                sortShifts();
+
+                saveToStorage();
+
+                updateFilters();
+
+                renderShifts();
+
+                calculateTotals();
+
+                showToast(`Importati ${importedCount} turni da CSV! 💛`);
+
+            } catch (err) {
+
+                console.error(err);
+
+                showToast('Errore durante l’import del CSV.', 'error');
+
+            }
+
+        }
+
+        /************************************************************
+
+         * EVENT LISTENERS
+
+         ************************************************************/
+
+        window.addEventListener('load', loadFromStorage);
+
+        monthFilter.addEventListener('change', () => {
+
+            yearFilter.value = '';
+
+            renderShifts();
+
+        });
+
+        yearFilter.addEventListener('change', () => {
+
+            monthFilter.value = '';
+
+            renderShifts();
+
+        });
+
+        shiftIsExtraCheckbox.addEventListener('change', (e) => {
+
+            if (e.target.checked) {
+
+                extraAmountContainer.classList.remove('hidden');
+
+            } else {
+
+                extraAmountContainer.classList.add('hidden');
+
+                shiftExtraAmountInput.value = '';
+
+            }
+
+        });
+
+        shiftTypeInput.addEventListener('change', (e) => {
+
+            if (e.target.value === 'Malattia') {
+
+                shiftLocationInput.value = 'Nessuna (Malattia)';
+
+                shiftLocationInput.disabled = true;
+
+                shiftIsExtraCheckbox.checked = false;
+
+                shiftIsExtraCheckbox.disabled = true;
+
+                shiftExtraAmountInput.value = '';
+
+                extraAmountContainer.classList.add('hidden');
+
+            } else {
+
+                if (shiftLocationInput.value === 'Nessuna (Malattia)') {
+
+                    shiftLocationInput.value = 'Goldbet Stazione';
+
+                }
+
+                shiftLocationInput.disabled = false;
+
+                shiftIsExtraCheckbox.disabled = false;
+
+            }
+
+        });
+
+        saveShiftBtn.addEventListener('click', upsertShift);
+
+        saveCommBtn.addEventListener('click', upsertCommitment);
+
+        cancelShiftEditBtn.addEventListener('click', resetShiftForm);
+
+        cancelCommEditBtn.addEventListener('click', resetCommForm);
+
+        let salaryTimeout;
+
+        baseSalaryInput.addEventListener('input', (e) => {
+
+            baseSalary = parseFloat(e.target.value) || 0;
+
+            calculateTotals();
+
+            clearTimeout(salaryTimeout);
+
+            salaryTimeout = setTimeout(() => {
+
+                saveToStorage();
+
+            }, 300);
+
+        });
+
     </script>
-    <script>
-// Cancella tutti i dati salvati prima di importare un file
-function clearAllDataBeforeImport() {
-    // Cancella tutto il localStorage
-    localStorage.clear();
-
-    // Svuota eventuali array globali
-    if (window.turni && Array.isArray(window.turni)) {
-        window.turni.length = 0;
-    }
-    if (window.turniPlanet && Array.isArray(window.turniPlanet)) {
-        window.turniPlanet.length = 0;
-    }
-
-    console.log("Dati precedenti cancellati prima dell'importazione.");
-}
-
-// Gestione importazione JSON (pulsante Ripristina)
-document.getElementById("importFile").addEventListener("change", async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // 🔥 Cancella tutto PRIMA di importare
-    clearAllDataBeforeImport();
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const data = JSON.parse(e.target.result);
-
-        // Ripristino dati
-        localStorage.setItem("turni", JSON.stringify(data.turni || []));
-        localStorage.setItem("turniPlanet", JSON.stringify(data.turniPlanet || []));
-
-        // Aggiorna la pagina
-        location.reload();
-    };
-    reader.readAsText(file);
-});
-</script>
-<button id="clearAllShiftsBtn" class="delete-all-btn">
-    Cancella tutti i turni
-</button>
 
 </body>
+
+</html>
