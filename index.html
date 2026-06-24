@@ -1,2199 +1,560 @@
 <!DOCTYPE html>
-
 <html lang="it">
-
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda Ally</title>
 
-    <meta charset="UTF-8" />
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
 
-    <title>Impegni Ally</title>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Google Sans',sans-serif;
+}
 
-    <!-- Tailwind CSS -->
+body{
+background:#f6f8fc;
+height:100vh;
+display:flex;
+flex-direction:column;
+}
 
-    <script src="https://cdn.tailwindcss.com"></script>
+header{
+height:64px;
+background:white;
+border-bottom:1px solid #dadce0;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 20px;
+}
 
-    <!-- FontAwesome -->
+.logo{
+display:flex;
+align-items:center;
+gap:10px;
+font-size:22px;
+font-weight:700;
+color:#1a73e8;
+}
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+.container{
+flex:1;
+display:flex;
+overflow:hidden;
+}
 
-    <!-- Google Fonts -->
+.sidebar{
+width:320px;
+background:white;
+border-right:1px solid #dadce0;
+padding:20px;
+overflow:auto;
+}
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+.content{
+flex:1;
+padding:20px;
+overflow:auto;
+}
 
-    <script>
+.card{
+background:white;
+border-radius:16px;
+padding:16px;
+margin-bottom:20px;
+box-shadow:0 1px 3px rgba(0,0,0,.1);
+}
 
-        tailwind.config = {
+.card h3{
+margin-bottom:12px;
+color:#1f1f1f;
+}
 
-            theme: {
+input,select{
+width:100%;
+padding:10px;
+border:1px solid #dadce0;
+border-radius:8px;
+margin-top:8px;
+margin-bottom:12px;
+}
 
-                extend: {
+button{
+background:#1a73e8;
+color:white;
+border:none;
+padding:12px;
+border-radius:10px;
+cursor:pointer;
+width:100%;
+font-weight:600;
+}
 
-                    colors: {
+button:hover{
+background:#1557b0;
+}
 
-                        lottoBlue: '#0055A5',
+.calendar-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+}
 
-                        lottoYellow: '#FFCC00',
+.calendar-header h2{
+font-size:28px;
+}
 
-                        lottoWhite: '#FFFFFF',
+.calendar{
+display:grid;
+grid-template-columns:repeat(7,1fr);
+gap:1px;
+background:#dadce0;
+border:1px solid #dadce0;
+}
 
-                        lottoDark: '#003366'
+.day-name{
+background:#f8f9fa;
+padding:12px;
+text-align:center;
+font-weight:600;
+}
 
-                    },
+.day{
+background:white;
+height:120px;
+padding:8px;
+overflow:auto;
+}
 
-                    fontFamily: {
+.day-number{
+font-size:14px;
+font-weight:600;
+margin-bottom:5px;
+}
 
-                        sans: ['Poppins', 'sans-serif'],
+.today{
+background:#e8f0fe;
+}
 
-                    }
+.event{
+font-size:11px;
+padding:4px 6px;
+border-radius:6px;
+margin-bottom:3px;
+color:white;
+}
 
-                }
+.shift{
+background:#1a73e8;
+}
 
-            }
+.commitment{
+background:#34a853;
+}
 
-        }
+.finance{
+background:#1a73e8;
+color:white;
+}
 
-    </script>
+.finance-value{
+font-size:30px;
+font-weight:700;
+margin-top:10px;
+}
 
-    <style>
+.list-item{
+padding:10px;
+border:1px solid #eee;
+border-radius:8px;
+margin-bottom:8px;
+}
 
-        body { background-color: #f0f4f8; }
-
-        ::-webkit-scrollbar { width: 6px; }
-
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-
-        ::-webkit-scrollbar-thumb { background: #0055A5; border-radius: 10px; }
-
-        ::-webkit-scrollbar-thumb:hover { background: #003366; }
-
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-
-        @keyframes fadeIn {
-
-            from { opacity: 0; transform: translateY(-10px); }
-
-            to { opacity: 1; transform: translateY(0); }
-
-        }
-
-    </style>
-
+</style>
 </head>
+<body>
 
-<body class="text-gray-800 font-sans min-h-screen flex flex-col">
+<header>
+<div class="logo">
+📅 Agenda Ally
+</div>
 
-    <!-- HEADER -->
+<div id="currentMonth"></div>
+</header>
 
-    <header class="bg-lottoBlue text-lottoWhite shadow-md sticky top-0 z-50">
+<div class="container">
 
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center flex-wrap gap-3">
+<div class="sidebar">
 
-            <div class="flex items-center gap-3">
+<div class="card">
 
-                <i class="fa-solid fa-calendar-check text-lottoYellow text-3xl"></i>
+<h3>Nuovo Turno</h3>
 
-                <h1 class="text-2xl font-bold tracking-wide">Impegni Ally <span class="text-lottoYellow">💛</span></h1>
+<input type="date" id="shiftDate">
 
-            </div>
+<select id="shiftType">
+<option>Mattina</option>
+<option>Pomeriggio</option>
+<option>Malattia</option>
+</select>
 
-            <div class="flex items-center gap-3 text-sm font-medium flex-wrap">
+<select id="shiftLocation">
+<option>Goldbet Stazione</option>
+<option>Planetwin365</option>
+<option>Nessuna</option>
+</select>
 
-                <div id="userGreeting">Ciao Amo! <i class="fa-solid fa-sparkles text-lottoYellow"></i></div>
+<input type="number" id="extraAmount" placeholder="Extra €">
 
-                <button onclick="exportAllData()"
+<button onclick="addShift()">Salva Turno</button>
 
-                        class="bg-purple-600 text-white px-3 py-1.5 rounded-full shadow hover:bg-purple-700 transition flex items-center gap-2"
+</div>
 
-                        title="Backup dati">
+<div class="card">
 
-                    <i class="fa-solid fa-floppy-disk"></i> Backup
+<h3>Nuovo Impegno</h3>
 
-                </button>
+<input type="text" id="commTitle" placeholder="Titolo">
 
-                <button onclick="document.getElementById('importFile').click()"
+<input type="date" id="commDate">
 
-                        class="bg-indigo-600 text-white px-3 py-1.5 rounded-full shadow hover:bg-indigo-700 transition flex items-center gap-2"
+<input type="time" id="commTime">
 
-                        title="Ripristina dati">
+<button onclick="addCommitment()">Salva Impegno</button>
 
-                    <i class="fa-solid fa-upload"></i> Ripristina
+</div>
 
-                </button>
+<div class="card finance">
 
-                <input type="file" id="importFile" accept=".json" class="hidden" />
+<h3>Finanze</h3>
 
-            </div>
+<input
+type="number"
+id="baseSalary"
+placeholder="Stipendio Base"
+style="color:black;background:white;"
+>
 
-        </div>
+<div class="finance-value">
+€ <span id="salaryTotal">0</span>
+</div>
 
-    </header>
+</div>
 
-    <!-- MAIN -->
+<div class="card">
 
-    <main class="flex-grow max-w-7xl mx-auto px-4 py-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+<h3>Prossimi Impegni</h3>
 
-        <!-- LEFT COLUMN -->
+<div id="upcoming"></div>
 
-        <div class="lg:col-span-4 space-y-6">
+</div>
 
-            <!-- GESTIONE TURNI -->
+</div>
 
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-lottoBlue">
+<div class="content">
 
-                <div class="bg-blue-50 px-4 py-3 border-b border-blue-100 flex items-center justify-between">
+<div class="calendar-header">
 
-                    <h2 class="font-bold text-lottoDark">
+<button style="width:80px" onclick="prevMonth()">◀</button>
 
-                        <i class="fa-solid fa-briefcase mr-2 text-lottoBlue"></i> Gestione Turni
+<h2 id="monthTitle"></h2>
 
-                    </h2>
+<button style="width:80px" onclick="nextMonth()">▶</button>
 
-                    <button id="cancelShiftEditBtn"
+</div>
 
-                            class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200">
+<div class="calendar" id="calendar"></div>
 
-                        Annulla
+</div>
 
-                    </button>
+</div>
 
-                </div>
+<script>
 
-                <div class="p-4 space-y-4">
+let shifts =
+JSON.parse(localStorage.getItem("ally_shifts") || "[]");
 
-                    <input type="hidden" id="shiftId" />
+let commitments =
+JSON.parse(localStorage.getItem("ally_commitments") || "[]");
 
-                    <div>
+let currentDate = new Date();
 
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+const monthNames = [
+"Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno",
+"Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"
+];
 
-                        <input type="date" id="shiftDate"
+function saveData(){
 
-                               class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none" />
+localStorage.setItem(
+"ally_shifts",
+JSON.stringify(shifts)
+);
 
-                    </div>
+localStorage.setItem(
+"ally_commitments",
+JSON.stringify(commitments)
+);
 
-                    <div>
+localStorage.setItem(
+"ally_month",
+JSON.stringify({
+month:currentDate.getMonth(),
+year:currentDate.getFullYear()
+})
+);
 
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Sede di Lavoro</label>
+localStorage.setItem(
+"ally_salary",
+document.getElementById("baseSalary").value
+);
 
-                        <select id="shiftLocation"
+}
 
-                                class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+function loadData(){
 
-                            <option value="Goldbet Stazione">Goldbet Stazione</option>
+const salary =
+localStorage.getItem("ally_salary");
 
-                            <option value="Planetwin365">Planetwin365</option>
+if(salary)
+document.getElementById("baseSalary").value=salary;
 
-                            <option value="Nessuna (Malattia)">Nessuna (Malattia)</option>
+const savedMonth=
+JSON.parse(localStorage.getItem("ally_month"));
 
-                        </select>
+if(savedMonth){
 
-                    </div>
+currentDate=new Date(
+savedMonth.year,
+savedMonth.month,
+1
+);
 
-                    <div>
+}else{
 
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo di Turno</label>
+currentDate=new Date();
 
-                        <select id="shiftType"
+}
 
-                                class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none">
+}
 
-                            <option value="Mattina">Mattina (09:00 - 13:30)</option>
+function addShift(){
 
-                            <option value="Pomeriggio">Pomeriggio (15:00 - 20:30)</option>
+const shift={
+date:document.getElementById("shiftDate").value,
+type:document.getElementById("shiftType").value,
+location:document.getElementById("shiftLocation").value,
+extra:Number(document.getElementById("extraAmount").value||0)
+};
 
-                            <option value="Malattia">Malattia 🤒</option>
+if(!shift.date)return;
 
-                        </select>
+shifts.push(shift);
 
-                    </div>
+saveData();
+renderCalendar();
+updateFinance();
+}
 
-                    <div class="flex items-center gap-2 mt-2">
+function addCommitment(){
 
-                        <input type="checkbox" id="shiftIsExtra"
+const item={
+title:document.getElementById("commTitle").value,
+date:document.getElementById("commDate").value,
+time:document.getElementById("commTime").value
+};
 
-                               class="w-4 h-4 text-lottoBlue focus:ring-lottoYellow border-gray-300 rounded cursor-pointer" />
+if(!item.title || !item.date)return;
 
-                        <label for="shiftIsExtra" class="text-sm font-medium text-gray-700 cursor-pointer">
+commitments.push(item);
 
-                            È un turno Extra?
+saveData();
+renderCalendar();
+renderUpcoming();
+}
 
-                        </label>
+function renderCalendar(){
 
-                    </div>
+const cal=document.getElementById("calendar");
 
-                    <div id="extraAmountContainer" class="hidden fade-in">
+cal.innerHTML="";
 
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Importo Extra (€)</label>
+[
+"Lun","Mar","Mer","Gio","Ven","Sab","Dom"
+].forEach(d=>{
 
-                        <input type="number" id="shiftExtraAmount" step="0.01" min="0" placeholder="0.00"
+const el=document.createElement("div");
+el.className="day-name";
+el.textContent=d;
+cal.appendChild(el);
 
-                               class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none" />
+});
 
-                    </div>
+const year=currentDate.getFullYear();
+const month=currentDate.getMonth();
 
-                    <button id="saveShiftBtn"
+document.getElementById("monthTitle").textContent=
+monthNames[month]+" "+year;
 
-                            class="w-full bg-lottoBlue hover:bg-lottoDark text-white font-bold py-2 px-4 rounded transition duration-200">
+document.getElementById("currentMonth").textContent=
+monthNames[month]+" "+year;
 
-                        <i class="fa-solid fa-plus mr-1"></i> Aggiungi Turno
+const firstDay=
+(new Date(year,month,1).getDay()+6)%7;
 
-                    </button>
+const daysInMonth=
+new Date(year,month+1,0).getDate();
 
-                    <button onclick="deleteAllShifts()"
+for(let i=0;i<firstDay;i++){
 
-                            class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+const empty=document.createElement("div");
+empty.className="day";
+cal.appendChild(empty);
 
-                        <i class="fa-solid fa-trash-can mr-1"></i> Cancella tutti i turni
+}
 
-                    </button>
+for(let day=1;day<=daysInMonth;day++){
 
-                </div>
+const box=document.createElement("div");
 
-            </div>
+box.className="day";
 
-            <!-- IMPEGNI PERSONALI -->
+const dateStr=
+`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
 
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-lottoYellow">
+const today=new Date();
 
-                <div class="bg-yellow-50 px-4 py-3 border-b border-yellow-100 flex items-center justify-between">
+if(
+today.getDate()===day &&
+today.getMonth()===month &&
+today.getFullYear()===year
+){
+box.classList.add("today");
+}
 
-                    <h2 class="font-bold text-yellow-800">
+let html=`<div class="day-number">${day}</div>`;
 
-                        <i class="fa-solid fa-star mr-2 text-lottoYellow"></i> Impegni Personali
+shifts
+.filter(s=>s.date===dateStr)
+.forEach(s=>{
 
-                    </h2>
+html+=`
+<div class="event shift">
+${s.type}
+</div>
+`;
 
-                    <button id="cancelCommEditBtn"
+});
 
-                            class="hidden text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200">
+commitments
+.filter(c=>c.date===dateStr)
+.forEach(c=>{
 
-                        Annulla
+html+=`
+<div class="event commitment">
+${c.title}
+</div>
+`;
 
-                    </button>
+});
 
-                </div>
+box.innerHTML=html;
 
-                <div class="p-4 space-y-4">
+cal.appendChild(box);
 
-                    <input type="hidden" id="commId" />
+}
 
-                    <div>
+}
 
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Cosa devi fare?</label>
+function renderUpcoming(){
 
-                        <input type="text" id="commTitle" placeholder="Es. Refill unghie"
+const container=
+document.getElementById("upcoming");
 
-                               class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none" />
+container.innerHTML="";
 
-                    </div>
+commitments
+.sort((a,b)=>
+new Date(a.date)-new Date(b.date)
+)
+.slice(0,10)
+.forEach(item=>{
 
-                    <div>
+container.innerHTML+=`
+<div class="list-item">
+<b>${item.title}</b><br>
+${item.date} ${item.time}
+</div>
+`;
 
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+});
 
-                        <input type="date" id="commDate"
+}
 
-                               class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none" />
+function updateFinance(){
 
-                    </div>
+const salary=
+Number(
+document.getElementById("baseSalary").value||0
+);
 
-                    <div class="grid grid-cols-2 gap-4">
+let extras=0;
 
-                        <div>
+shifts.forEach(s=>{
+extras+=Number(s.extra||0);
+});
 
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Ora Inizio</label>
+document.getElementById(
+"salaryTotal"
+).textContent=(salary+extras).toFixed(2);
 
-                            <input type="time" id="commStart"
+saveData();
 
-                                   class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none" />
+}
 
-                        </div>
+function prevMonth(){
 
-                        <div>
+currentDate.setMonth(
+currentDate.getMonth()-1
+);
 
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Ora Fine</label>
+saveData();
+renderCalendar();
 
-                            <input type="time" id="commEnd"
+}
 
-                                   class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-lottoYellow focus:border-lottoBlue outline-none" />
+function nextMonth(){
 
-                        </div>
+currentDate.setMonth(
+currentDate.getMonth()+1
+);
 
-                    </div>
+saveData();
+renderCalendar();
 
-                    <button id="saveCommBtn"
+}
 
-                            class="w-full bg-lottoYellow hover:bg-yellow-500 text-lottoDark font-bold py-2 px-4 rounded transition duration-200 shadow-sm">
+document
+.getElementById("baseSalary")
+.addEventListener("input",updateFinance);
 
-                        <i class="fa-solid fa-plus mr-1"></i> Aggiungi Impegno
+loadData();
+renderCalendar();
+renderUpcoming();
+updateFinance();
 
-                    </button>
+window.addEventListener(
+"beforeunload",
+saveData
+);
 
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- MIDDLE COLUMN -->
-
-        <div class="lg:col-span-5 flex flex-col space-y-4">
-
-            <div class="bg-white rounded-xl shadow-lg flex-grow flex flex-col border-t-4 border-lottoBlue overflow-hidden">
-
-                <div class="bg-blue-50 px-4 py-3 border-b border-blue-100 flex justify-between items-center flex-wrap gap-3">
-
-                    <h2 class="font-bold text-lottoDark">
-
-                        <i class="fa-solid fa-list-check mr-2"></i> I tuoi Turni
-
-                    </h2>
-
-                    <div class="flex gap-2 flex-wrap">
-
-                        <select id="monthFilter" class="text-xs p-1.5 border border-gray-300 rounded bg-white">
-
-                            <option value="">Tutti i mesi</option>
-
-                        </select>
-
-                        <select id="yearFilter" class="text-xs p-1.5 border border-gray-300 rounded bg-white">
-
-                            <option value="">Tutti gli anni</option>
-
-                        </select>
-
-                        <input type="file" id="fileImport" accept=".ics,.csv" class="hidden" />
-
-                        <button onclick="document.getElementById('fileImport').click()"
-
-                                class="text-xs bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700 transition"
-
-                                title="Importa file .ics o .csv">
-
-                            <i class="fa-solid fa-upload"></i>
-
-                        </button>
-
-                        <button onclick="exportICS()"
-
-                                class="text-xs bg-lottoBlue text-white px-2 py-1 rounded hover:bg-lottoDark transition"
-
-                                title="Esporta .ICS">
-
-                            <i class="fa-solid fa-calendar-arrow-down"></i>
-
-                        </button>
-
-                        <button onclick="exportCSV()"
-
-                                class="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transition"
-
-                                title="Esporta .CSV">
-
-                            <i class="fa-solid fa-file-csv"></i>
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-                <div class="p-4 flex-grow overflow-y-auto" style="max-height: 600px;">
-
-                    <div id="shiftsContainer" class="space-y-4">
-
-                        <div class="text-center text-gray-400 py-10 italic">Caricamento turni in corso...</div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- RIGHT COLUMN -->
-
-        <div class="lg:col-span-3 space-y-6">
-
-            <!-- FINANZE -->
-
-            <div class="bg-lottoDark rounded-xl shadow-lg overflow-hidden text-white">
-
-                <div class="bg-black/20 px-4 py-3 border-b border-white/10">
-
-                    <h2 class="font-bold text-lottoYellow">
-
-                        <i class="fa-solid fa-sack-dollar mr-2"></i> Finanze del mese
-
-                    </h2>
-
-                </div>
-
-                <div class="p-4 space-y-4">
-
-                    <div class="bg-white/10 p-3 rounded-lg border border-white/20">
-
-                        <p class="text-sm text-gray-300">Totale Extra Calcolati</p>
-
-                        <p class="text-2xl font-bold text-lottoYellow">€ <span id="displayTotExtra">0.00</span></p>
-
-                    </div>
-
-                    <div>
-
-                        <label class="block text-sm font-medium text-gray-300 mb-1">Stipendio Base (€)</label>
-
-                        <input type="number" id="baseSalaryInput" step="1" min="0" placeholder="Es. 800"
-
-                               class="w-full p-2 bg-white/10 border border-white/20 rounded text-white focus:ring-2 focus:ring-lottoYellow outline-none placeholder-gray-400" />
-
-                    </div>
-
-                    <div class="bg-lottoBlue p-3 rounded-lg border border-blue-400 shadow-inner">
-
-                        <p class="text-sm text-blue-100">Stipendio Complessivo Stimato</p>
-
-                        <p class="text-3xl font-bold text-white">€ <span id="displayTotSalary">0.00</span></p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- IMPEGNI LISTA -->
-
-            <div class="bg-white rounded-xl shadow-lg flex-grow flex flex-col border-t-4 border-lottoYellow overflow-hidden">
-
-                <div class="bg-yellow-50 px-4 py-3 border-b border-yellow-100">
-
-                    <h2 class="font-bold text-yellow-800">
-
-                        <i class="fa-solid fa-thumbtack mr-2"></i> Prossimi Impegni
-
-                    </h2>
-
-                </div>
-
-                <div class="p-4 flex-grow overflow-y-auto" style="max-height: 350px;">
-
-                    <div id="commitmentsContainer" class="space-y-3"></div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </main>
-
-    <!-- TOAST -->
-
-    <div id="toast"
-
-         class="fixed bottom-4 right-4 p-4 rounded-lg text-white shadow-xl opacity-0 pointer-events-none transition-opacity duration-300 z-50 transform translate-y-2 flex items-center gap-3 bg-green-600">
-
-        <i id="toastIcon" class="fa-solid fa-circle-check text-xl"></i>
-
-        <span id="toastMsg" class="font-medium"></span>
-
-    </div>
-
-    <script>
-
-        /************************************************************
-
-         * STORAGE KEYS
-
-         ************************************************************/
-
-        const STORAGE_KEYS = {
-
-            shifts: 'impegniAlly_shiftsData',
-
-            commitments: 'impegniAlly_commitmentsData',
-
-            baseSalary: 'impegniAlly_baseSalary'
-
-        };
-
-        /************************************************************
-
-         * DATI
-
-         ************************************************************/
-
-        let shiftsData = [];
-
-        let commitmentsData = [];
-
-        let baseSalary = 0;
-
-        /************************************************************
-
-         * ELEMENTI UI
-
-         ************************************************************/
-
-        const shiftIdInput = document.getElementById('shiftId');
-
-        const shiftDateInput = document.getElementById('shiftDate');
-
-        const shiftLocationInput = document.getElementById('shiftLocation');
-
-        const shiftTypeInput = document.getElementById('shiftType');
-
-        const shiftIsExtraCheckbox = document.getElementById('shiftIsExtra');
-
-        const extraAmountContainer = document.getElementById('extraAmountContainer');
-
-        const shiftExtraAmountInput = document.getElementById('shiftExtraAmount');
-
-        const saveShiftBtn = document.getElementById('saveShiftBtn');
-
-        const cancelShiftEditBtn = document.getElementById('cancelShiftEditBtn');
-
-        const shiftsContainer = document.getElementById('shiftsContainer');
-
-        const commIdInput = document.getElementById('commId');
-
-        const commTitleInput = document.getElementById('commTitle');
-
-        const commDateInput = document.getElementById('commDate');
-
-        const commStartInput = document.getElementById('commStart');
-
-        const commEndInput = document.getElementById('commEnd');
-
-        const saveCommBtn = document.getElementById('saveCommBtn');
-
-        const cancelCommEditBtn = document.getElementById('cancelCommEditBtn');
-
-        const commitmentsContainer = document.getElementById('commitmentsContainer');
-
-        const baseSalaryInput = document.getElementById('baseSalaryInput');
-
-        const displayTotExtra = document.getElementById('displayTotExtra');
-
-        const displayTotSalary = document.getElementById('displayTotSalary');
-
-        const monthFilter = document.getElementById('monthFilter');
-
-        const yearFilter = document.getElementById('yearFilter');
-
-        /************************************************************
-
-         * COSTANTI
-
-         ************************************************************/
-
-        const monthNames = [
-
-            'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-
-            'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
-
-        ];
-
-        /************************************************************
-
-         * UTILS
-
-         ************************************************************/
-
-        function generateId() {
-
-            return '_' + Math.random().toString(36).slice(2, 11);
-
-        }
-
-        function normalizeText(text = '') {
-
-            return String(text)
-
-                .toLowerCase()
-
-                .normalize('NFD')
-
-                .replace(/[\u0300-\u036f]/g, '');
-
-        }
-
-        function formatDateIT(dateStr) {
-
-            const d = new Date(dateStr);
-
-            return d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-        }
-
-        function saveToStorage() {
-
-            localStorage.setItem(STORAGE_KEYS.shifts, JSON.stringify(shiftsData));
-
-            localStorage.setItem(STORAGE_KEYS.commitments, JSON.stringify(commitmentsData));
-
-            localStorage.setItem(STORAGE_KEYS.baseSalary, String(baseSalary));
-
-        }
-
-        function loadFromStorage() {
-
-            try {
-
-                shiftsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.shifts) || '[]');
-
-                commitmentsData = JSON.parse(localStorage.getItem(STORAGE_KEYS.commitments) || '[]');
-
-                baseSalary = parseFloat(localStorage.getItem(STORAGE_KEYS.baseSalary) || '0') || 0;
-
-            } catch (err) {
-
-                shiftsData = [];
-
-                commitmentsData = [];
-
-                baseSalary = 0;
-
-            }
-
-            if (baseSalary > 0) {
-
-                baseSalaryInput.value = baseSalary;
-
-            }
-
-            sortShifts();
-
-            sortCommitments();
-
-            updateFilters();
-
-            renderShifts();
-
-            renderCommitments();
-
-            calculateTotals();
-
-        }
-
-        function sortShifts() {
-
-            shiftsData.sort((a, b) => {
-
-                const da = new Date(a.date).getTime();
-
-                const db = new Date(b.date).getTime();
-
-                if (da !== db) return da - db;
-
-                const order = { 'Mattina': 1, 'Pomeriggio': 2, 'Malattia': 3 };
-
-                return (order[a.type] || 99) - (order[b.type] || 99);
-
-            });
-
-        }
-
-        function sortCommitments() {
-
-            commitmentsData.sort((a, b) => {
-
-                const aDate = new Date(`${a.date}T${a.start || '00:00'}`).getTime();
-
-                const bDate = new Date(`${b.date}T${b.start || '00:00'}`).getTime();
-
-                return aDate - bDate;
-
-            });
-
-        }
-
-        function showToast(msg, type = 'success') {
-
-            const toast = document.getElementById('toast');
-
-            const toastIcon = document.getElementById('toastIcon');
-
-            const toastMsg = document.getElementById('toastMsg');
-
-            toastMsg.innerText = msg;
-
-            if (type === 'error') {
-
-                toast.classList.remove('bg-green-600');
-
-                toast.classList.add('bg-red-500');
-
-                toastIcon.className = 'fa-solid fa-circle-exclamation text-xl';
-
-            } else {
-
-                toast.classList.remove('bg-red-500');
-
-                toast.classList.add('bg-green-600');
-
-                toastIcon.className = 'fa-solid fa-circle-check text-xl';
-
-            }
-
-            toast.style.opacity = '1';
-
-            toast.style.transform = 'translateY(-10px)';
-
-            setTimeout(() => {
-
-                toast.style.opacity = '0';
-
-                toast.style.transform = 'translateY(10px)';
-
-            }, 3000);
-
-        }
-
-        function downloadFile(content, fileName, mimeType) {
-
-            const blob = new Blob([content], { type: mimeType });
-
-            const url = URL.createObjectURL(blob);
-
-            const a = document.createElement('a');
-
-            a.href = url;
-
-            a.download = fileName;
-
-            document.body.appendChild(a);
-
-            a.click();
-
-            document.body.removeChild(a);
-
-            URL.revokeObjectURL(url);
-
-        }
-
-        /************************************************************
-
-         * LOGICA RICONOSCIMENTO TURNO DA IMPORT
-
-         ************************************************************/
-
-        function detectLocationFromText(text) {
-
-            const t = normalizeText(text);
-
-            if (
-
-                t.includes('planet') ||
-
-                t.includes('planetwin') ||
-
-                t.includes('planetwin365') ||
-
-                t.includes('pianet') // piccola tolleranza typo
-
-            ) {
-
-                return 'Planetwin365';
-
-            }
-
-            if (
-
-                t.includes('goldbet') ||
-
-                t.includes('stazione')
-
-            ) {
-
-                return 'Goldbet Stazione';
-
-            }
-
-            return 'Goldbet Stazione';
-
-        }
-
-        function detectShiftType(summary = '', description = '', location = '', startDate = null, endDate = null) {
-
-            const text = normalizeText(`${summary} ${description} ${location}`);
-
-            if (text.includes('malattia')) return 'Malattia';
-
-            if (text.includes('mattina')) return 'Mattina';
-
-            if (text.includes('pomeriggio')) return 'Pomeriggio';
-
-            if (startDate) {
-
-                const hour = startDate.getHours();
-
-                if (hour < 14) return 'Mattina';
-
-                return 'Pomeriggio';
-
-            }
-
-            return 'Mattina';
-
-        }
-
-        function detectExtra(description = '', summary = '') {
-
-            const text = normalizeText(`${summary} ${description}`);
-
-            return text.includes('extra');
-
-        }
-
-        function extractExtraAmount(text = '') {
-
-            const clean = text.replace(',', '.');
-
-            const match = clean.match(/(?:€|euro|importo|extra)\s*[:\-]?\s*(\d+(?:\.\d+)?)/i);
-
-            return match ? parseFloat(match[1]) || 0 : 0;
-
-        }
-
-        function createShiftObject({ date, location, type, isExtra = false, extraAmount = 0 }) {
-
-            return {
-
-                id: generateId(),
-
-                date,
-
-                location,
-
-                type,
-
-                isExtra,
-
-                extraAmount: Number(extraAmount) || 0
-
-            };
-
-        }
-
-        /************************************************************
-
-         * FILTRI
-
-         ************************************************************/
-
-        function updateFilters() {
-
-            const months = new Set();
-
-            const years = new Set();
-
-            shiftsData.forEach(s => {
-
-                const date = new Date(s.date);
-
-                if (isNaN(date)) return;
-
-                const year = date.getFullYear();
-
-                const month = date.getMonth();
-
-                months.add(`${year}-${month}`);
-
-                years.add(String(year));
-
-            });
-
-            monthFilter.innerHTML = '<option value="">Tutti i mesi</option>';
-
-            Array.from(months).sort().reverse().forEach(monthYear => {
-
-                const [year, month] = monthYear.split('-');
-
-                const option = document.createElement('option');
-
-                option.value = monthYear;
-
-                option.textContent = `${monthNames[parseInt(month)]} ${year}`;
-
-                monthFilter.appendChild(option);
-
-            });
-
-            yearFilter.innerHTML = '<option value="">Tutti gli anni</option>';
-
-            Array.from(years).sort().reverse().forEach(year => {
-
-                const option = document.createElement('option');
-
-                option.value = year;
-
-                option.textContent = year;
-
-                yearFilter.appendChild(option);
-
-            });
-
-        }
-
-        function getFilteredShifts() {
-
-            let filtered = [...shiftsData];
-
-            if (monthFilter.value) {
-
-                const [year, month] = monthFilter.value.split('-').map(Number);
-
-                filtered = filtered.filter(s => {
-
-                    const d = new Date(s.date);
-
-                    return d.getFullYear() === year && d.getMonth() === month;
-
-                });
-
-            } else if (yearFilter.value) {
-
-                const year = parseInt(yearFilter.value);
-
-                filtered = filtered.filter(s => {
-
-                    const d = new Date(s.date);
-
-                    return d.getFullYear() === year;
-
-                });
-
-            }
-
-            return filtered;
-
-        }
-
-        /************************************************************
-
-         * RENDER TURNI
-
-         ************************************************************/
-
-        function renderShifts() {
-
-            const filteredData = getFilteredShifts();
-
-            if (filteredData.length === 0) {
-
-                shiftsContainer.innerHTML = '<div class="text-center text-gray-500 py-6">Nessun turno per questo periodo.</div>';
-
-                return;
-
-            }
-
-            const grouped = {};
-
-            filteredData.forEach(s => {
-
-                const date = new Date(s.date);
-
-                const year = date.getFullYear();
-
-                const month = date.getMonth();
-
-                const key = `${year}-${month}`;
-
-                if (!grouped[key]) {
-
-                    grouped[key] = { year, month, shifts: [] };
-
-                }
-
-                grouped[key].shifts.push(s);
-
-            });
-
-            let html = '';
-
-            Object.keys(grouped).sort().reverse().forEach(key => {
-
-                const group = grouped[key];
-
-                const monthYear = `${monthNames[group.month]} ${group.year}`;
-
-                html += `
-
-                    <div class="mb-6">
-
-                        <h3 class="font-bold text-lg text-lottoBlue mb-3">📅 ${monthYear}</h3>
-
-                        <div class="space-y-2">
-
-                `;
-
-                group.shifts.forEach(s => {
-
-                    const dateObj = new Date(s.date);
-
-                    const dateStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-                    const dayName = dateObj.toLocaleDateString('it-IT', { weekday: 'short' });
-
-                    let icon = '';
-
-                    let colorClass = '';
-
-                    let timeStr = '';
-
-                    if (s.type === 'Malattia') {
-
-                        icon = 'fa-bed text-red-500';
-
-                        colorClass = 'border-red-400 bg-red-50';
-
-                        timeStr = 'Intera giornata';
-
-                    } else if (s.type === 'Mattina') {
-
-                        icon = 'fa-sun text-yellow-500';
-
-                        colorClass = 'border-yellow-300 bg-white';
-
-                        timeStr = '09:00 - 13:30';
-
-                    } else {
-
-                        icon = 'fa-moon text-blue-500';
-
-                        colorClass = 'border-blue-300 bg-white';
-
-                        timeStr = '15:00 - 20:30';
-
-                    }
-
-                    const extraBadge = s.isExtra
-
-                        ? `<span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-semibold ml-2"><i class="fa-solid fa-euro-sign"></i> €${Number(s.extraAmount || 0).toFixed(2)}</span>`
-
-                        : '';
-
-                    html += `
-
-                        <div class="p-3 border-l-4 ${colorClass} rounded shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 fade-in">
-
-                            <div>
-
-                                <div class="flex items-center gap-2 flex-wrap">
-
-                                    <span class="font-bold text-gray-800">${dateStr} <span class="text-sm text-gray-500">${dayName}</span></span>
-
-                                    ${extraBadge}
-
-                                </div>
-
-                                <div class="text-sm text-gray-600 mt-1">
-
-                                    <i class="fa-solid ${icon} w-5 text-center"></i>
-
-                                    <span class="font-medium">${s.type}</span>
-
-                                    ${s.type !== 'Malattia' ? `presso <b>${s.location}</b>` : ''}
-
-                                </div>
-
-                                <div class="text-xs text-gray-500 mt-1">
-
-                                    <i class="fa-regular fa-clock"></i> ${timeStr}
-
-                                </div>
-
-                            </div>
-
-                            <div class="flex gap-2 w-full sm:w-auto justify-end mt-2 sm:mt-0">
-
-                                <button onclick="editShift('${s.id}')" class="text-blue-500 hover:bg-blue-100 p-2 rounded transition" title="Modifica">
-
-                                    <i class="fa-solid fa-pen"></i>
-
-                                </button>
-
-                                <button onclick="deleteShift('${s.id}')" class="text-red-500 hover:bg-red-100 p-2 rounded transition" title="Elimina">
-
-                                    <i class="fa-solid fa-trash"></i>
-
-                                </button>
-
-                            </div>
-
-                        </div>
-
-                    `;
-
-                });
-
-                html += `</div></div>`;
-
-            });
-
-            shiftsContainer.innerHTML = html;
-
-        }
-
-        /************************************************************
-
-         * RENDER IMPEGNI
-
-         ************************************************************/
-
-        function renderCommitments() {
-
-            if (commitmentsData.length === 0) {
-
-                commitmentsContainer.innerHTML = '<div class="text-center text-gray-500 py-6 text-sm">Nessun impegno personale.</div>';
-
-                return;
-
-            }
-
-            let html = '';
-
-            commitmentsData.forEach(c => {
-
-                const dateObj = new Date(c.date);
-
-                const dateStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
-
-                const timeStr = (c.start && c.end)
-
-                    ? `${c.start} - ${c.end}`
-
-                    : (c.start ? `Dalle ${c.start}` : 'Orario da definire');
-
-                html += `
-
-                    <div class="p-3 border-l-4 border-lottoYellow bg-yellow-50/50 rounded shadow-sm flex justify-between items-center fade-in">
-
-                        <div class="w-full">
-
-                            <div class="font-semibold text-gray-800">${c.title}</div>
-
-                            <div class="text-xs text-gray-600 mt-1 flex gap-3 flex-wrap">
-
-                                <span><i class="fa-regular fa-calendar"></i> ${dateStr}</span>
-
-                                <span><i class="fa-regular fa-clock"></i> ${timeStr}</span>
-
-                            </div>
-
-                        </div>
-
-                        <div class="flex flex-col sm:flex-row gap-1">
-
-                            <button onclick="editComm('${c.id}')" class="text-gray-500 hover:text-blue-500 p-1">
-
-                                <i class="fa-solid fa-pen text-sm"></i>
-
-                            </button>
-
-                            <button onclick="deleteComm('${c.id}')" class="text-gray-500 hover:text-red-500 p-1">
-
-                                <i class="fa-solid fa-trash text-sm"></i>
-
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                `;
-
-            });
-
-            commitmentsContainer.innerHTML = html;
-
-        }
-
-        /************************************************************
-
-         * TOTALI
-
-         ************************************************************/
-
-        function calculateTotals() {
-
-            let totalExtras = 0;
-
-            shiftsData.forEach(s => {
-
-                if (s.isExtra && !isNaN(s.extraAmount)) {
-
-                    totalExtras += parseFloat(s.extraAmount || 0);
-
-                }
-
-            });
-
-            const totalSalary = (parseFloat(baseSalary || 0) + totalExtras);
-
-            displayTotExtra.innerText = totalExtras.toFixed(2);
-
-            displayTotSalary.innerText = totalSalary.toFixed(2);
-
-        }
-
-        /************************************************************
-
-         * RESET FORM
-
-         ************************************************************/
-
-        function resetShiftForm() {
-
-            shiftIdInput.value = '';
-
-            shiftDateInput.value = '';
-
-            shiftLocationInput.value = 'Goldbet Stazione';
-
-            shiftLocationInput.disabled = false;
-
-            shiftTypeInput.value = 'Mattina';
-
-            shiftIsExtraCheckbox.checked = false;
-
-            shiftIsExtraCheckbox.disabled = false;
-
-            extraAmountContainer.classList.add('hidden');
-
-            shiftExtraAmountInput.value = '';
-
-            saveShiftBtn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Aggiungi Turno';
-
-            saveShiftBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-
-            saveShiftBtn.classList.add('bg-lottoBlue', 'hover:bg-lottoDark');
-
-            cancelShiftEditBtn.classList.add('hidden');
-
-        }
-
-        function resetCommForm() {
-
-            commIdInput.value = '';
-
-            commTitleInput.value = '';
-
-            commDateInput.value = '';
-
-            commStartInput.value = '';
-
-            commEndInput.value = '';
-
-            saveCommBtn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Aggiungi Impegno';
-
-            saveCommBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
-
-            saveCommBtn.classList.add('bg-lottoYellow', 'hover:bg-yellow-500');
-
-            cancelCommEditBtn.classList.add('hidden');
-
-        }
-
-        /************************************************************
-
-         * CRUD TURNI
-
-         ************************************************************/
-
-        function upsertShift() {
-
-            const date = shiftDateInput.value;
-
-            const location = shiftLocationInput.value;
-
-            const type = shiftTypeInput.value;
-
-            const isExtra = shiftIsExtraCheckbox.checked;
-
-            const extraAmount = parseFloat(shiftExtraAmountInput.value) || 0;
-
-            const id = shiftIdInput.value;
-
-            if (!date) {
-
-                showToast('Amo, inserisci almeno la data!', 'error');
-
-                return;
-
-            }
-
-            const shiftObj = { date, location, type, isExtra, extraAmount };
-
-            if (id) {
-
-                const idx = shiftsData.findIndex(s => s.id === id);
-
-                if (idx > -1) {
-
-                    shiftsData[idx] = { ...shiftsData[idx], ...shiftObj };
-
-                    showToast('Turno aggiornato con successo!');
-
-                }
-
-            } else {
-
-                shiftsData.push({ id: generateId(), ...shiftObj });
-
-                showToast('Nuovo turno aggiunto! 💛');
-
-            }
-
-            sortShifts();
-
-            saveToStorage();
-
-            updateFilters();
-
-            renderShifts();
-
-            calculateTotals();
-
-            resetShiftForm();
-
-        }
-
-        function upsertCommitment() {
-
-            const title = commTitleInput.value.trim();
-
-            const date = commDateInput.value;
-
-            const start = commStartInput.value;
-
-            const end = commEndInput.value;
-
-            const id = commIdInput.value;
-
-            if (!title || !date) {
-
-                showToast('Inserisci cosa devi fare e la data!', 'error');
-
-                return;
-
-            }
-
-            const commObj = { title, date, start, end };
-
-            if (id) {
-
-                const idx = commitmentsData.findIndex(c => c.id === id);
-
-                if (idx > -1) {
-
-                    commitmentsData[idx] = { ...commitmentsData[idx], ...commObj };
-
-                    showToast('Impegno aggiornato!');
-
-                }
-
-            } else {
-
-                commitmentsData.push({ id: generateId(), ...commObj });
-
-                showToast('Impegno personale aggiunto!');
-
-            }
-
-            sortCommitments();
-
-            saveToStorage();
-
-            renderCommitments();
-
-            resetCommForm();
-
-        }
-
-        window.deleteShift = function(id) {
-
-            shiftsData = shiftsData.filter(s => s.id !== id);
-
-            saveToStorage();
-
-            updateFilters();
-
-            renderShifts();
-
-            calculateTotals();
-
-            showToast('Turno eliminato.');
-
-        };
-
-        window.deleteComm = function(id) {
-
-            commitmentsData = commitmentsData.filter(c => c.id !== id);
-
-            saveToStorage();
-
-            renderCommitments();
-
-            showToast('Impegno eliminato.');
-
-        };
-
-        window.editShift = function(id) {
-
-            const s = shiftsData.find(x => x.id === id);
-
-            if (!s) return;
-
-            shiftIdInput.value = s.id;
-
-            shiftDateInput.value = s.date;
-
-            shiftLocationInput.value = s.location;
-
-            shiftTypeInput.value = s.type;
-
-            shiftIsExtraCheckbox.checked = !!s.isExtra;
-
-            shiftExtraAmountInput.value = s.isExtra ? (s.extraAmount || '') : '';
-
-            if (s.type === 'Malattia') {
-
-                shiftLocationInput.value = 'Nessuna (Malattia)';
-
-                shiftLocationInput.disabled = true;
-
-                shiftIsExtraCheckbox.checked = false;
-
-                shiftIsExtraCheckbox.disabled = true;
-
-                extraAmountContainer.classList.add('hidden');
-
-            } else {
-
-                shiftLocationInput.disabled = false;
-
-                shiftIsExtraCheckbox.disabled = false;
-
-                if (s.isExtra) {
-
-                    extraAmountContainer.classList.remove('hidden');
-
-                } else {
-
-                    extraAmountContainer.classList.add('hidden');
-
-                }
-
-            }
-
-            saveShiftBtn.innerHTML = '<i class="fa-solid fa-save mr-1"></i> Aggiorna Turno';
-
-            saveShiftBtn.classList.remove('bg-lottoBlue', 'hover:bg-lottoDark');
-
-            saveShiftBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-
-            cancelShiftEditBtn.classList.remove('hidden');
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        };
-
-        window.editComm = function(id) {
-
-            const c = commitmentsData.find(x => x.id === id);
-
-            if (!c) return;
-
-            commIdInput.value = c.id;
-
-            commTitleInput.value = c.title;
-
-            commDateInput.value = c.date;
-
-            commStartInput.value = c.start || '';
-
-            commEndInput.value = c.end || '';
-
-            saveCommBtn.innerHTML = '<i class="fa-solid fa-save mr-1"></i> Aggiorna Impegno';
-
-            saveCommBtn.classList.remove('bg-lottoYellow', 'hover:bg-yellow-500');
-
-            saveCommBtn.classList.add('bg-green-500', 'hover:bg-green-600');
-
-            cancelCommEditBtn.classList.remove('hidden');
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        };
-
-        window.deleteAllShifts = function() {
-
-            if (!confirm('Sei sicura di voler cancellare TUTTI i turni? Questa operazione non può essere annullata.')) {
-
-                return;
-
-            }
-
-            shiftsData = [];
-
-            saveToStorage();
-
-            updateFilters();
-
-            renderShifts();
-
-            calculateTotals();
-
-            showToast('Tutti i turni sono stati eliminati.');
-
-        };
-
-        /************************************************************
-
-         * EXPORT
-
-         ************************************************************/
-
-        window.exportICS = function() {
-
-            if (shiftsData.length === 0) {
-
-                showToast('Nessun turno da esportare!', 'error');
-
-                return;
-
-            }
-
-            let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Impegni Ally//IT\r\nCALSCALE:GREGORIAN\r\n';
-
-            shiftsData.forEach(s => {
-
-                const dateObj = new Date(s.date);
-
-                const y = dateObj.getFullYear();
-
-                const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-
-                const d = String(dateObj.getDate()).padStart(2, '0');
-
-                const dateStr = `${y}${m}${d}`;
-
-                let startT = '090000';
-
-                let endT = '133000';
-
-                if (s.type === 'Pomeriggio') {
-
-                    startT = '150000';
-
-                    endT = '203000';
-
-                }
-
-                ics += 'BEGIN:VEVENT\r\n';
-
-                ics += `UID:${s.id}@impegnially.com\r\n`;
-
-                ics += `DTSTAMP:${dateStr}T000000Z\r\n`;
-
-                if (s.type === 'Malattia') {
-
-                    ics += `DTSTART;VALUE=DATE:${dateStr}\r\n`;
-
-                    ics += `SUMMARY:🤒 Malattia\r\n`;
-
-                    ics += `DESCRIPTION:Malattia\r\n`;
-
-                } else {
-
-                    ics += `DTSTART:${dateStr}T${startT}\r\n`;
-
-                    ics += `DTEND:${dateStr}T${endT}\r\n`;
-
-                    ics += `SUMMARY:Lavoro - ${s.type}\r\n`;
-
-                    ics += `LOCATION:${s.location}\r\n`;
-
-                    let desc = s.isExtra
-
-                        ? `Turno Extra - Importo: ${Number(s.extraAmount || 0).toFixed(2)} EUR`
-
-                        : 'Turno standard';
-
-                    ics += `DESCRIPTION:${desc}\r\n`;
-
-                }
-
-                ics += 'END:VEVENT\r\n';
-
-            });
-
-            ics += 'END:VCALENDAR';
-
-            downloadFile(ics, 'Turni_Ally.ics', 'text/calendar');
-
-            showToast('File ICS esportato!');
-
-        };
-
-        window.exportCSV = function() {
-
-            if (shiftsData.length === 0) {
-
-                showToast('Nessun turno da esportare!', 'error');
-
-                return;
-
-            }
-
-            let csv = 'Data,Sede,Tipo,E_Extra,Importo_Extra\n';
-
-            shiftsData.forEach(s => {
-
-                const dateObj = new Date(s.date);
-
-                const d = dateObj.toLocaleDateString('it-IT');
-
-                const loc = String(s.location || '').replace(/,/g, ' ');
-
-                const isExtraStr = s.isExtra ? 'Si' : 'No';
-
-                const amount = s.isExtra ? Number(s.extraAmount || 0) : 0;
-
-                csv += `${d},${loc},${s.type},${isExtraStr},${amount}\n`;
-
-            });
-
-            downloadFile(csv, 'Turni_Ally.csv', 'text/csv;charset=utf-8;');
-
-            showToast('File CSV esportato!');
-
-        };
-
-        window.exportAllData = function() {
-
-            const allData = {
-
-                shiftsData,
-
-                commitmentsData,
-
-                baseSalary
-
-            };
-
-            const json = JSON.stringify(allData, null, 2);
-
-            downloadFile(json, 'Impegni_Ally_Backup.json', 'application/json');
-
-            showToast('Backup creato con successo! 💛');
-
-        };
-
-        /************************************************************
-
-         * IMPORT BACKUP JSON
-
-         ************************************************************/
-
-        document.getElementById('importFile').addEventListener('change', (e) => {
-
-            const file = e.target.files[0];
-
-            if (!file) return;
-
-            const reader = new FileReader();
-
-            reader.onload = (event) => {
-
-                try {
-
-                    const data = JSON.parse(event.target.result);
-
-                    shiftsData = Array.isArray(data.shiftsData) ? data.shiftsData : [];
-
-                    commitmentsData = Array.isArray(data.commitmentsData) ? data.commitmentsData : [];
-
-                    baseSalary = parseFloat(data.baseSalary || 0) || 0;
-
-                    sortShifts();
-
-                    sortCommitments();
-
-                    saveToStorage();
-
-                    baseSalaryInput.value = baseSalary > 0 ? baseSalary : '';
-
-                    updateFilters();
-
-                    renderShifts();
-
-                    renderCommitments();
-
-                    calculateTotals();
-
-                    showToast('Backup ripristinato con successo! 💛');
-
-                } catch (err) {
-
-                    console.error(err);
-
-                    showToast('Errore nel ripristino del backup.', 'error');
-
-                }
-
-                e.target.value = '';
-
-            };
-
-            reader.readAsText(file);
-
-        });
-
-        /************************************************************
-
-         * IMPORT ICS / CSV
-
-         ************************************************************/
-
-        document.getElementById('fileImport').addEventListener('change', (e) => {
-
-            const file = e.target.files[0];
-
-            if (!file) return;
-
-            const name = file.name.toLowerCase();
-
-            const reader = new FileReader();
-
-            reader.onload = (event) => {
-
-                const content = event.target.result;
-
-                if (name.endsWith('.ics')) {
-
-                    parseICS(content);
-
-                } else if (name.endsWith('.csv')) {
-
-                    parseCSV(content);
-
-                } else {
-
-                    showToast('Formato non supportato. Usa .ics o .csv', 'error');
-
-                }
-
-                e.target.value = '';
-
-            };
-
-            reader.readAsText(file, 'utf-8');
-
-        });
-
-        function parseICS(content) {
-
-            try {
-
-                const rawEvents = content.split('BEGIN:VEVENT').slice(1);
-
-                let importedCount = 0;
-
-                rawEvents.forEach(block => {
-
-                    const event = block.split('END:VEVENT')[0] || block;
-
-                    const summaryMatch = event.match(/SUMMARY:(.*)/i);
-
-                    const locationMatch = event.match(/LOCATION:(.*)/i);
-
-                    const descMatch = event.match(/DESCRIPTION:(.*)/i);
-
-                    const summary = summaryMatch ? summaryMatch[1].trim() : '';
-
-                    const locationRaw = locationMatch ? locationMatch[1].trim() : '';
-
-                    const description = descMatch ? descMatch[1].trim() : '';
-
-                    // Data con ora
-
-                    const dtStartDateTime = event.match(/DTSTART(?:;[^:]+)?:(\d{8})T(\d{6})/i);
-
-                    const dtEndDateTime = event.match(/DTEND(?:;[^:]+)?:(\d{8})T(\d{6})/i);
-
-                    // Data senza ora (all day)
-
-                    const dtStartDateOnly = event.match(/DTSTART(?:;[^:]+)?:(\d{8})(?!T)/i);
-
-                    let date = '';
-
-                    let startDate = null;
-
-                    let endDate = null;
-
-                    if (dtStartDateTime) {
-
-                        const d = dtStartDateTime[1];
-
-                        const t = dtStartDateTime[2];
-
-                        date = `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`;
-
-                        startDate = new Date(`${date}T${t.slice(0,2)}:${t.slice(2,4)}:${t.slice(4,6)}`);
-
-                    } else if (dtStartDateOnly) {
-
-                        const d = dtStartDateOnly[1];
-
-                        date = `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`;
-
-                    }
-
-                    if (!date) return;
-
-                    if (dtEndDateTime) {
-
-                        const d = dtEndDateTime[1];
-
-                        const t = dtEndDateTime[2];
-
-                        const endDateStr = `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`;
-
-                        endDate = new Date(`${endDateStr}T${t.slice(0,2)}:${t.slice(2,4)}:${t.slice(4,6)}`);
-
-                    }
-
-                    const location = detectLocationFromText(`${locationRaw} ${summary} ${description}`);
-
-                    const type = detectShiftType(summary, description, locationRaw, startDate, endDate);
-
-                    const isExtra = detectExtra(description, summary);
-
-                    const extraAmount = isExtra ? extractExtraAmount(description + ' ' + summary) : 0;
-
-                    shiftsData.push(createShiftObject({
-
-                        date,
-
-                        location: type === 'Malattia' ? 'Nessuna (Malattia)' : location,
-
-                        type,
-
-                        isExtra: type === 'Malattia' ? false : isExtra,
-
-                        extraAmount: type === 'Malattia' ? 0 : extraAmount
-
-                    }));
-
-                    importedCount++;
-
-                });
-
-                if (importedCount === 0) {
-
-                    showToast('Nessun turno trovato nel file ICS.', 'error');
-
-                    return;
-
-                }
-
-                sortShifts();
-
-                saveToStorage();
-
-                updateFilters();
-
-                renderShifts();
-
-                calculateTotals();
-
-                showToast(`Importati ${importedCount} turni da ICS! 💛`);
-
-            } catch (err) {
-
-                console.error(err);
-
-                showToast('Errore durante l’import del file ICS.', 'error');
-
-            }
-
-        }
-
-        function parseCSV(content) {
-
-            try {
-
-                const lines = content.split(/\r?\n/).filter(Boolean);
-
-                if (lines.length <= 1) {
-
-                    showToast('CSV vuoto o non valido.', 'error');
-
-                    return;
-
-                }
-
-                const header = lines[0].split(',').map(h => normalizeText(h.trim()));
-
-                let importedCount = 0;
-
-                // Mappa colonne se trova intestazioni "furbe"
-
-                const idxDate = header.findIndex(h => h.includes('data'));
-
-                const idxLocation = header.findIndex(h => h.includes('sede') || h.includes('location') || h.includes('posto'));
-
-                const idxType = header.findIndex(h => h.includes('tipo'));
-
-                const idxExtra = header.findIndex(h => h.includes('extra') && !h.includes('importo'));
-
-                const idxExtraAmount = header.findIndex(h => h.includes('importo'));
-
-                for (let i = 1; i < lines.length; i++) {
-
-                    const row = lines[i].trim();
-
-                    if (!row) continue;
-
-                    const cols = row.split(',');
-
-                    let dateRaw = idxDate >= 0 ? (cols[idxDate] || '').trim() : (cols[0] || '').trim();
-
-                    let locationRaw = idxLocation >= 0 ? (cols[idxLocation] || '').trim() : (cols[1] || '').trim();
-
-                    let typeRaw = idxType >= 0 ? (cols[idxType] || '').trim() : (cols[2] || '').trim();
-
-                    let extraRaw = idxExtra >= 0 ? (cols[idxExtra] || '').trim() : (cols[3] || '').trim();
-
-                    let extraAmountRaw = idxExtraAmount >= 0 ? (cols[idxExtraAmount] || '').trim() : (cols[4] || '').trim();
-
-                    if (!dateRaw) continue;
-
-                    // Data dd/mm/yyyy o yyyy-mm-dd
-
-                    let date = '';
-
-                    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateRaw)) {
-
-                        const [dd, mm, yyyy] = dateRaw.split('/');
-
-                        date = `${yyyy}-${mm}-${dd}`;
-
-                    } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateRaw)) {
-
-                        date = dateRaw;
-
-                    } else {
-
-                        continue;
-
-                    }
-
-                    const combinedText = `${locationRaw} ${typeRaw}`;
-
-                    let location = detectLocationFromText(combinedText);
-
-                    let type = 'Mattina';
-
-                    const t = normalizeText(typeRaw);
-
-                    if (t.includes('malattia')) type = 'Malattia';
-
-                    else if (t.includes('pomeriggio')) type = 'Pomeriggio';
-
-                    else if (t.includes('mattina')) type = 'Mattina';
-
-                    else {
-
-                        // Se nel CSV non c'è tipo, provo a dedurlo da parole/orari nel testo
-
-                        if (t.includes('15') || t.includes('16') || t.includes('17') || t.includes('18') || t.includes('19') || t.includes('20')) {
-
-                            type = 'Pomeriggio';
-
-                        } else {
-
-                            type = 'Mattina';
-
-                        }
-
-                    }
-
-                    let isExtra = false;
-
-                    const extraNorm = normalizeText(extraRaw);
-
-                    if (extraNorm === 'si' || extraNorm === 'sì' || extraNorm === 'true' || extraNorm.includes('extra')) {
-
-                        isExtra = true;
-
-                    }
-
-                    let extraAmount = 0;
-
-                    if (extraAmountRaw) {
-
-                        extraAmount = parseFloat(String(extraAmountRaw).replace(',', '.')) || 0;
-
-                    }
-
-                    shiftsData.push(createShiftObject({
-
-                        date,
-
-                        location: type === 'Malattia' ? 'Nessuna (Malattia)' : location,
-
-                        type,
-
-                        isExtra: type === 'Malattia' ? false : isExtra,
-
-                        extraAmount: type === 'Malattia' ? 0 : extraAmount
-
-                    }));
-
-                    importedCount++;
-
-                }
-
-                if (importedCount === 0) {
-
-                    showToast('Nessun turno trovato nel file CSV.', 'error');
-
-                    return;
-
-                }
-
-                sortShifts();
-
-                saveToStorage();
-
-                updateFilters();
-
-                renderShifts();
-
-                calculateTotals();
-
-                showToast(`Importati ${importedCount} turni da CSV! 💛`);
-
-            } catch (err) {
-
-                console.error(err);
-
-                showToast('Errore durante l’import del CSV.', 'error');
-
-            }
-
-        }
-
-        /************************************************************
-
-         * EVENT LISTENERS
-
-         ************************************************************/
-
-        window.addEventListener('load', loadFromStorage);
-
-        monthFilter.addEventListener('change', () => {
-
-            yearFilter.value = '';
-
-            renderShifts();
-
-        });
-
-        yearFilter.addEventListener('change', () => {
-
-            monthFilter.value = '';
-
-            renderShifts();
-
-        });
-
-        shiftIsExtraCheckbox.addEventListener('change', (e) => {
-
-            if (e.target.checked) {
-
-                extraAmountContainer.classList.remove('hidden');
-
-            } else {
-
-                extraAmountContainer.classList.add('hidden');
-
-                shiftExtraAmountInput.value = '';
-
-            }
-
-        });
-
-        shiftTypeInput.addEventListener('change', (e) => {
-
-            if (e.target.value === 'Malattia') {
-
-                shiftLocationInput.value = 'Nessuna (Malattia)';
-
-                shiftLocationInput.disabled = true;
-
-                shiftIsExtraCheckbox.checked = false;
-
-                shiftIsExtraCheckbox.disabled = true;
-
-                shiftExtraAmountInput.value = '';
-
-                extraAmountContainer.classList.add('hidden');
-
-            } else {
-
-                if (shiftLocationInput.value === 'Nessuna (Malattia)') {
-
-                    shiftLocationInput.value = 'Goldbet Stazione';
-
-                }
-
-                shiftLocationInput.disabled = false;
-
-                shiftIsExtraCheckbox.disabled = false;
-
-            }
-
-        });
-
-        saveShiftBtn.addEventListener('click', upsertShift);
-
-        saveCommBtn.addEventListener('click', upsertCommitment);
-
-        cancelShiftEditBtn.addEventListener('click', resetShiftForm);
-
-        cancelCommEditBtn.addEventListener('click', resetCommForm);
-
-        let salaryTimeout;
-
-        baseSalaryInput.addEventListener('input', (e) => {
-
-            baseSalary = parseFloat(e.target.value) || 0;
-
-            calculateTotals();
-
-            clearTimeout(salaryTimeout);
-
-            salaryTimeout = setTimeout(() => {
-
-                saveToStorage();
-
-            }, 300);
-
-        });
-
-    </script>
+</script>
 
 </body>
-
 </html>
