@@ -1,140 +1,196 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agenda Ally</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agenda Ally Premium 💛</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
+:root{
+--primary:#1a73e8;
+--bg:#f6f8fc;
+--card:#ffffff;
+--text:#202124;
+--border:#dadce0;
+--goldbet:#4285f4;
+--planet:#34a853;
+--malattia:#ea4335;
+--extra:#9334e6;
+--impegno:#fbbc04;
+}
+
+.dark{
+--bg:#202124;
+--card:#303134;
+--text:#ffffff;
+--border:#5f6368;
+}
 
 *{
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:'Google Sans',sans-serif;
+font-family:'Inter',sans-serif;
 }
 
 body{
-background:#f6f8fc;
+background:var(--bg);
+color:var(--text);
 height:100vh;
 display:flex;
 flex-direction:column;
 }
 
 header{
-height:64px;
-background:white;
-border-bottom:1px solid #dadce0;
+height:70px;
+background:var(--card);
 display:flex;
 align-items:center;
 justify-content:space-between;
 padding:0 20px;
+border-bottom:1px solid var(--border);
 }
 
 .logo{
 display:flex;
 align-items:center;
-gap:10px;
-font-size:22px;
+gap:12px;
+font-size:24px;
 font-weight:700;
-color:#1a73e8;
+color:var(--primary);
 }
 
-.container{
+.header-actions{
+display:flex;
+gap:10px;
+}
+
+.header-btn{
+background:none;
+border:none;
+font-size:20px;
+cursor:pointer;
+}
+
+.main{
 flex:1;
 display:flex;
 overflow:hidden;
 }
 
 .sidebar{
-width:320px;
-background:white;
-border-right:1px solid #dadce0;
-padding:20px;
+width:340px;
+background:var(--card);
+border-right:1px solid var(--border);
 overflow:auto;
+padding:20px;
 }
 
 .content{
 flex:1;
-padding:20px;
 overflow:auto;
+padding:20px;
 }
 
 .card{
-background:white;
-border-radius:16px;
-padding:16px;
+background:var(--card);
+border:1px solid var(--border);
+border-radius:20px;
+padding:18px;
 margin-bottom:20px;
-box-shadow:0 1px 3px rgba(0,0,0,.1);
 }
 
 .card h3{
-margin-bottom:12px;
-color:#1f1f1f;
+margin-bottom:15px;
+font-size:18px;
 }
 
-input,select{
+.stat{
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+}
+
+.stat-value{
+font-weight:700;
+}
+
+input,
+select{
 width:100%;
-padding:10px;
-border:1px solid #dadce0;
-border-radius:8px;
+padding:12px;
 margin-top:8px;
 margin-bottom:12px;
+border:1px solid var(--border);
+border-radius:10px;
+background:transparent;
+color:var(--text);
 }
 
 button{
-background:#1a73e8;
-color:white;
-border:none;
-padding:12px;
-border-radius:10px;
 cursor:pointer;
-width:100%;
+border:none;
+border-radius:12px;
+padding:12px;
 font-weight:600;
 }
 
-button:hover{
-background:#1557b0;
+.btn-primary{
+background:var(--primary);
+color:white;
+width:100%;
 }
 
-.calendar-header{
+.todo-item{
+display:flex;
+gap:10px;
+margin-bottom:8px;
+}
+
+.todo-item input{
+width:auto;
+margin:0;
+}
+
+.calendar-toolbar{
 display:flex;
 justify-content:space-between;
 align-items:center;
 margin-bottom:20px;
 }
 
-.calendar-header h2{
+.calendar-title{
 font-size:28px;
+font-weight:700;
 }
 
-.calendar{
+.calendar-grid{
 display:grid;
 grid-template-columns:repeat(7,1fr);
-gap:1px;
-background:#dadce0;
-border:1px solid #dadce0;
+border:1px solid var(--border);
 }
 
-.day-name{
-background:#f8f9fa;
-padding:12px;
-text-align:center;
+.day-header{
+background:var(--card);
+padding:15px;
 font-weight:600;
+text-align:center;
+border-bottom:1px solid var(--border);
 }
 
 .day{
-background:white;
-height:120px;
+background:var(--card);
+height:140px;
+border-right:1px solid var(--border);
+border-bottom:1px solid var(--border);
 padding:8px;
 overflow:auto;
 }
 
 .day-number{
-font-size:14px;
-font-weight:600;
+font-weight:700;
 margin-bottom:5px;
 }
 
@@ -143,146 +199,137 @@ background:#e8f0fe;
 }
 
 .event{
-font-size:11px;
 padding:4px 6px;
-border-radius:6px;
-margin-bottom:3px;
+border-radius:8px;
+margin-bottom:4px;
+font-size:11px;
 color:white;
+cursor:pointer; /* Aggiunto cursore a manina */
+transition: opacity 0.2s;
 }
 
-.shift{
-background:#1a73e8;
+.event:hover {
+opacity: 0.8;
 }
 
-.commitment{
-background:#34a853;
-}
+.goldbet{background:var(--goldbet);}
+.planet{background:var(--planet);}
+.malattia{background:var(--malattia);}
+.extra{background:var(--extra);}
+.impegno{background:var(--impegno); color:black;}
 
-.finance{
-background:#1a73e8;
-color:white;
-}
-
-.finance-value{
-font-size:30px;
+.finance-total{
+font-size:32px;
 font-weight:700;
 margin-top:10px;
 }
 
-.list-item{
-padding:10px;
-border:1px solid #eee;
-border-radius:8px;
-margin-bottom:8px;
+.month-nav{
+display:flex;
+gap:10px;
 }
 
+.month-nav button{
+background:var(--primary);
+color:white;
+width:50px;
+}
 </style>
 </head>
+
 <body>
 
 <header>
-<div class="logo">
-📅 Agenda Ally
+<div class="logo">📅 Agenda Ally Premium</div>
+<div class="header-actions">
+<button class="header-btn" onclick="toggleTheme()">🌙</button>
 </div>
-
-<div id="currentMonth"></div>
 </header>
 
-<div class="container">
+<div class="main">
 
 <div class="sidebar">
 
 <div class="card">
+<h3>💛 Dashboard</h3>
+<div class="stat">
+<span>Prossimo Turno</span>
+<span class="stat-value" id="nextShift">--</span>
+</div>
+<div class="stat">
+<span>Prossimo Impegno</span>
+<span class="stat-value" id="nextCommitment">--</span>
+</div>
+</div>
 
-<h3>Nuovo Turno</h3>
-
+<div class="card">
+<h3>➕ Nuovo Turno</h3>
 <input type="date" id="shiftDate">
-
+<select id="shiftLocation">
+<option value="Goldbet">Goldbet Stazione</option>
+<option value="Planet">Planetwin365</option>
+<option value="Malattia">Malattia</option>
+</select>
 <select id="shiftType">
 <option>Mattina</option>
 <option>Pomeriggio</option>
-<option>Malattia</option>
 </select>
-
-<select id="shiftLocation">
-<option>Goldbet Stazione</option>
-<option>Planetwin365</option>
-<option>Nessuna</option>
-</select>
-
 <input type="number" id="extraAmount" placeholder="Extra €">
-
-<button onclick="addShift()">Salva Turno</button>
-
+<button class="btn-primary" onclick="addShift()">Salva Turno</button>
 </div>
 
 <div class="card">
-
-<h3>Nuovo Impegno</h3>
-
-<input type="text" id="commTitle" placeholder="Titolo">
-
-<input type="date" id="commDate">
-
-<input type="time" id="commTime">
-
-<button onclick="addCommitment()">Salva Impegno</button>
-
-</div>
-
-<div class="card finance">
-
-<h3>Finanze</h3>
-
-<input
-type="number"
-id="baseSalary"
-placeholder="Stipendio Base"
-style="color:black;background:white;"
->
-
-<div class="finance-value">
-€ <span id="salaryTotal">0</span>
-</div>
-
+<h3>⭐ Nuovo Impegno</h3>
+<input type="text" id="commitmentTitle" placeholder="Titolo">
+<input type="date" id="commitmentDate">
+<input type="time" id="commitmentTime">
+<button class="btn-primary" onclick="addCommitment()">Salva Impegno</button>
 </div>
 
 <div class="card">
+<h3>📥 Importa Dati</h3>
+<input type="file" id="importFile" accept=".csv,.ics" style="padding: 5px;">
+<button class="btn-primary" onclick="importData()">Importa (.CSV / .ICS)</button>
+<p style="font-size: 11px; margin-top: 8px; color: var(--text); opacity: 0.8;">
+*CSV (Turni): Data(YYYY-MM-DD), Location, Tipo, Extra<br>
+*ICS: Estrapola eventi come Impegni
+</p>
+</div>
 
-<h3>Prossimi Impegni</h3>
+<div class="card">
+<h3>💰 Finanze</h3>
+<input type="number" id="baseSalary" placeholder="Stipendio Base">
+<div class="finance-total">
+€ <span id="totalSalary">0</span>
+</div>
+</div>
 
-<div id="upcoming"></div>
-
+<div class="card">
+<h3>✅ Todo List</h3>
+<div id="todoContainer"></div>
+<input type="text" id="todoInput" placeholder="Nuova attività">
+<button class="btn-primary" onclick="addTodo()">Aggiungi</button>
 </div>
 
 </div>
 
 <div class="content">
-
-<div class="calendar-header">
-
-<button style="width:80px" onclick="prevMonth()">◀</button>
-
-<h2 id="monthTitle"></h2>
-
-<button style="width:80px" onclick="nextMonth()">▶</button>
-
+<div class="calendar-toolbar">
+<div class="month-nav">
+<button onclick="prevMonth()">◀</button>
+<button onclick="nextMonth()">▶</button>
 </div>
-
-<div class="calendar" id="calendar"></div>
-
+<div class="calendar-title" id="monthTitle"></div>
+</div>
+<div id="calendar" class="calendar-grid"></div>
 </div>
 
 </div>
 
 <script>
-
-let shifts =
-JSON.parse(localStorage.getItem("ally_shifts") || "[]");
-
-let commitments =
-JSON.parse(localStorage.getItem("ally_commitments") || "[]");
-
+let shifts = JSON.parse(localStorage.getItem("ally_shifts") || "[]");
+let commitments = JSON.parse(localStorage.getItem("ally_commitments") || "[]");
+let todos = JSON.parse(localStorage.getItem("ally_todos") || "[]");
 let currentDate = new Date();
 
 const monthNames = [
@@ -291,269 +338,295 @@ const monthNames = [
 ];
 
 function saveData(){
-
-localStorage.setItem(
-"ally_shifts",
-JSON.stringify(shifts)
-);
-
-localStorage.setItem(
-"ally_commitments",
-JSON.stringify(commitments)
-);
-
-localStorage.setItem(
-"ally_month",
-JSON.stringify({
-month:currentDate.getMonth(),
-year:currentDate.getFullYear()
-})
-);
-
-localStorage.setItem(
-"ally_salary",
-document.getElementById("baseSalary").value
-);
-
+localStorage.setItem("ally_shifts", JSON.stringify(shifts));
+localStorage.setItem("ally_commitments", JSON.stringify(commitments));
+localStorage.setItem("ally_todos", JSON.stringify(todos));
 }
 
-function loadData(){
-
-const salary =
-localStorage.getItem("ally_salary");
-
-if(salary)
-document.getElementById("baseSalary").value=salary;
-
-const savedMonth=
-JSON.parse(localStorage.getItem("ally_month"));
-
-if(savedMonth){
-
-currentDate=new Date(
-savedMonth.year,
-savedMonth.month,
-1
-);
-
-}else{
-
-currentDate=new Date();
-
+function toggleTheme(){
+document.body.classList.toggle("dark");
+localStorage.setItem("ally_theme", document.body.classList.contains("dark"));
 }
 
+if(localStorage.getItem("ally_theme") === "true"){
+document.body.classList.add("dark");
 }
 
-function addShift(){
+/************************************************
+ CALENDARIO
+************************************************/
+const calendar = document.getElementById("calendar");
 
-const shift={
-date:document.getElementById("shiftDate").value,
-type:document.getElementById("shiftType").value,
-location:document.getElementById("shiftLocation").value,
-extra:Number(document.getElementById("extraAmount").value||0)
-};
+function renderCalendar(){
+calendar.innerHTML = "";
+const days = ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"];
 
-if(!shift.date)return;
+days.forEach(day => {
+calendar.innerHTML += `<div class="day-header">${day}</div>`;
+});
 
-shifts.push(shift);
+const year = currentDate.getFullYear();
+const month = currentDate.getMonth();
+document.getElementById("monthTitle").innerText = `${monthNames[month]} ${year}`;
 
+const firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
+const totalDays = new Date(year, month + 1, 0).getDate();
+
+for(let i=0; i<firstDay; i++){
+calendar.innerHTML += `<div class="day"></div>`;
+}
+
+for(let day=1; day<=totalDays; day++){
+const fullDate = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+const today = new Date();
+const isToday = today.getDate()===day && today.getMonth()===month && today.getFullYear()===year;
+
+let eventsHTML = "";
+
+// Render Turni (con onclick per eliminare)
+shifts.filter(s => s.date === fullDate).forEach(s => {
+let css = "goldbet";
+if(s.location === "Planet") css = "planet";
+if(s.location === "Malattia") css = "malattia";
+if(Number(s.extra) > 0) css = "extra";
+
+eventsHTML += `
+<div class="event ${css}" onclick="deleteShift(${s.id})" title="Clicca per eliminare">
+${s.type} ${s.location === 'Planet' ? '(P)' : '(G)'}
+</div>`;
+});
+
+// Render Impegni (con onclick per eliminare)
+commitments.filter(c => c.date === fullDate).forEach(c => {
+eventsHTML += `
+<div class="event impegno" onclick="deleteCommitment(${c.id})" title="Clicca per eliminare">
+⭐ ${c.title}
+</div>`;
+});
+
+calendar.innerHTML += `
+<div class="day ${isToday ? 'today' : ''}">
+<div class="day-number">${day}</div>
+${eventsHTML}
+</div>`;
+}
+
+updateDashboard();
+updateFinance();
+}
+
+/************************************************
+ GESTIONE ELIMINAZIONE
+************************************************/
+function deleteShift(id) {
+if(confirm("Vuoi eliminare questo turno? Amo, assicurati che sia quello giusto!")) {
+shifts = shifts.filter(s => s.id !== id);
 saveData();
 renderCalendar();
-updateFinance();
+}
+}
+
+function deleteCommitment(id) {
+if(confirm("Sei sicura di voler cancellare questo impegno?")) {
+commitments = commitments.filter(c => c.id !== id);
+saveData();
+renderCalendar();
+}
+}
+
+/************************************************
+ TURNI & IMPEGNI
+************************************************/
+function addShift(){
+const date = document.getElementById("shiftDate").value;
+const location = document.getElementById("shiftLocation").value;
+const type = document.getElementById("shiftType").value;
+const extra = Number(document.getElementById("extraAmount").value || 0);
+
+if(!date){ alert("Inserisci una data!"); return; }
+
+shifts.push({ id: Date.now(), date, location, type, extra });
+saveData();
+document.getElementById("shiftDate").value = "";
+document.getElementById("extraAmount").value = "";
+renderCalendar();
 }
 
 function addCommitment(){
+const title = document.getElementById("commitmentTitle").value;
+const date = document.getElementById("commitmentDate").value;
+const time = document.getElementById("commitmentTime").value;
 
-const item={
-title:document.getElementById("commTitle").value,
-date:document.getElementById("commDate").value,
-time:document.getElementById("commTime").value
-};
+if(!title || !date){ alert("Compila titolo e data!"); return; }
 
-if(!item.title || !item.date)return;
-
-commitments.push(item);
-
+commitments.push({ id: Date.now(), title, date, time });
 saveData();
+document.getElementById("commitmentTitle").value = "";
+document.getElementById("commitmentDate").value = "";
+document.getElementById("commitmentTime").value = "";
 renderCalendar();
-renderUpcoming();
 }
 
-function renderCalendar(){
+/************************************************
+ IMPORTAZIONE DATI (CSV / ICS)
+************************************************/
+function importData() {
+const fileInput = document.getElementById('importFile');
+const file = fileInput.files[0];
+if (!file) return alert("Amo, devi prima selezionare un file da importare!");
 
-const cal=document.getElementById("calendar");
+const reader = new FileReader();
+reader.onload = function(e) {
+const text = e.target.result;
+if (file.name.endsWith('.csv')) parseCSV(text);
+else if (file.name.endsWith('.ics')) parseICS(text);
+else alert("Ops! Formato non supportato. Usa un .CSV o un .ICS.");
+};
+reader.readAsText(file);
+}
 
-cal.innerHTML="";
-
-[
-"Lun","Mar","Mer","Gio","Ven","Sab","Dom"
-].forEach(d=>{
-
-const el=document.createElement("div");
-el.className="day-name";
-el.textContent=d;
-cal.appendChild(el);
-
+function parseCSV(text) {
+const lines = text.split('\n');
+let count = 0;
+// Struttura attesa: Data(YYYY-MM-DD), Location(es. Goldbet/Planet), Tipo(es. Mattina), Extra
+lines.forEach((line, index) => {
+if (index === 0) return; // Salta l'intestazione
+const cols = line.split(',');
+if (cols.length >= 3) {
+shifts.push({
+id: Date.now() + count,
+date: cols[0].trim(),
+location: cols[1].trim(),
+type: cols[2].trim(),
+extra: Number(cols[3] || 0)
 });
-
-const year=currentDate.getFullYear();
-const month=currentDate.getMonth();
-
-document.getElementById("monthTitle").textContent=
-monthNames[month]+" "+year;
-
-document.getElementById("currentMonth").textContent=
-monthNames[month]+" "+year;
-
-const firstDay=
-(new Date(year,month,1).getDay()+6)%7;
-
-const daysInMonth=
-new Date(year,month+1,0).getDate();
-
-for(let i=0;i<firstDay;i++){
-
-const empty=document.createElement("div");
-empty.className="day";
-cal.appendChild(empty);
-
+count++;
 }
-
-for(let day=1;day<=daysInMonth;day++){
-
-const box=document.createElement("div");
-
-box.className="day";
-
-const dateStr=
-`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-
-const today=new Date();
-
-if(
-today.getDate()===day &&
-today.getMonth()===month &&
-today.getFullYear()===year
-){
-box.classList.add("today");
-}
-
-let html=`<div class="day-number">${day}</div>`;
-
-shifts
-.filter(s=>s.date===dateStr)
-.forEach(s=>{
-
-html+=`
-<div class="event shift">
-${s.type}
-</div>
-`;
-
 });
-
-commitments
-.filter(c=>c.date===dateStr)
-.forEach(c=>{
-
-html+=`
-<div class="event commitment">
-${c.title}
-</div>
-`;
-
-});
-
-box.innerHTML=html;
-
-cal.appendChild(box);
-
+saveData(); 
+renderCalendar();
+alert(`Fatto! Ho importato ${count} turni dal tuo CSV.`);
+// Reset input
+document.getElementById('importFile').value = '';
 }
 
+function parseICS(text) {
+const lines = text.split('\n');
+let currentEvent = {};
+let count = 0;
+
+lines.forEach(line => {
+if (line.startsWith('BEGIN:VEVENT')) {
+currentEvent = {};
+} else if (line.startsWith('SUMMARY:')) {
+currentEvent.title = line.replace('SUMMARY:', '').trim();
+} else if (line.startsWith('DTSTART')) {
+// Estrapola data YYYYMMDD dall'ICS
+const dateMatch = line.match(/(\d{4})(\d{2})(\d{2})/);
+if (dateMatch) {
+currentEvent.date = `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
+}
+} else if (line.startsWith('END:VEVENT')) {
+if (currentEvent.title && currentEvent.date) {
+commitments.push({
+id: Date.now() + count,
+title: currentEvent.title,
+date: currentEvent.date,
+time: ""
+});
+count++;
+}
+}
+});
+saveData(); 
+renderCalendar();
+alert(`Fatto! Ho importato ${count} impegni dal tuo ICS.`);
+// Reset input
+document.getElementById('importFile').value = '';
 }
 
-function renderUpcoming(){
-
-const container=
-document.getElementById("upcoming");
-
-container.innerHTML="";
-
-commitments
-.sort((a,b)=>
-new Date(a.date)-new Date(b.date)
-)
-.slice(0,10)
-.forEach(item=>{
-
-container.innerHTML+=`
-<div class="list-item">
-<b>${item.title}</b><br>
-${item.date} ${item.time}
-</div>
-`;
-
-});
-
-}
-
-function updateFinance(){
-
-const salary=
-Number(
-document.getElementById("baseSalary").value||0
-);
-
-let extras=0;
-
-shifts.forEach(s=>{
-extras+=Number(s.extra||0);
-});
-
-document.getElementById(
-"salaryTotal"
-).textContent=(salary+extras).toFixed(2);
-
+/************************************************
+ TODO LIST
+************************************************/
+function addTodo(){
+const input = document.getElementById("todoInput");
+if(!input.value.trim()) return;
+todos.push({ id: Date.now(), text: input.value, done: false });
+input.value = "";
 saveData();
+renderTodos();
+}
 
+function toggleTodo(id){
+const todo = todos.find(t => t.id === id);
+if(!todo) return;
+todo.done = !todo.done;
+saveData();
+renderTodos();
+}
+
+function renderTodos(){
+const container = document.getElementById("todoContainer");
+container.innerHTML = "";
+todos.forEach(todo => {
+container.innerHTML += `
+<div class="todo-item">
+<input type="checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo(${todo.id})">
+<span style="text-decoration:${todo.done ? 'line-through' : 'none'}">${todo.text}</span>
+</div>`;
+});
+}
+
+/************************************************
+ FINANZE
+************************************************/
+function updateFinance(){
+const base = Number(document.getElementById("baseSalary").value || 0);
+let extras = 0;
+shifts.forEach(s => { extras += Number(s.extra || 0); });
+document.getElementById("totalSalary").innerText = (base + extras).toFixed(2);
+localStorage.setItem("ally_salary", base);
+}
+
+const salaryInput = document.getElementById("baseSalary");
+salaryInput.value = localStorage.getItem("ally_salary") || "";
+salaryInput.addEventListener("input", updateFinance);
+
+/************************************************
+ DASHBOARD & NAVIGAZIONE
+************************************************/
+function updateDashboard(){
+const today = new Date();
+today.setHours(0,0,0,0);
+
+const nextShift = shifts
+.filter(s => new Date(s.date) >= today)
+.sort((a,b) => new Date(a.date) - new Date(b.date))[0];
+
+const nextCommitment = commitments
+.filter(c => new Date(c.date) >= today)
+.sort((a,b) => new Date(a.date) - new Date(b.date))[0];
+
+document.getElementById("nextShift").innerText = nextShift ? nextShift.date : "--";
+document.getElementById("nextCommitment").innerText = nextCommitment ? nextCommitment.title : "--";
 }
 
 function prevMonth(){
-
-currentDate.setMonth(
-currentDate.getMonth()-1
-);
-
-saveData();
+currentDate.setMonth(currentDate.getMonth() - 1);
 renderCalendar();
-
 }
 
 function nextMonth(){
-
-currentDate.setMonth(
-currentDate.getMonth()+1
-);
-
-saveData();
+currentDate.setMonth(currentDate.getMonth() + 1);
 renderCalendar();
-
 }
 
-document
-.getElementById("baseSalary")
-.addEventListener("input",updateFinance);
-
-loadData();
+/************************************************
+ AVVIO
+************************************************/
+renderTodos();
 renderCalendar();
-renderUpcoming();
-updateFinance();
-
-window.addEventListener(
-"beforeunload",
-saveData
-);
-
+window.addEventListener("beforeunload", saveData);
 </script>
 
 </body>
