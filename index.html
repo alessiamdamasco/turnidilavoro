@@ -3,7 +3,8 @@
 
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#1a73e8">
 <title>Agenda Ally Premium 💛</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -51,20 +52,22 @@ align-items:center;
 justify-content:space-between;
 padding:0 20px;
 border-bottom:1px solid var(--border);
+flex-shrink: 0;
 }
 
 .logo{
 display:flex;
 align-items:center;
 gap:12px;
-font-size:24px;
+font-size:22px;
 font-weight:700;
 color:var(--primary);
 }
 
 .header-actions{
 display:flex;
-gap:10px;
+gap:15px;
+align-items: center;
 }
 
 .header-btn{
@@ -127,6 +130,7 @@ border:1px solid var(--border);
 border-radius:10px;
 background:transparent;
 color:var(--text);
+font-size: 16px;
 }
 
 button{
@@ -135,6 +139,7 @@ border:none;
 border-radius:12px;
 padding:12px;
 font-weight:600;
+font-size: 16px;
 }
 
 .btn-primary{
@@ -146,11 +151,13 @@ width:100%;
 .todo-item{
 display:flex;
 gap:10px;
-margin-bottom:8px;
+margin-bottom:12px;
+align-items: center;
 }
 
 .todo-item input{
-width:auto;
+width:20px;
+height:20px;
 margin:0;
 }
 
@@ -170,14 +177,17 @@ font-weight:700;
 display:grid;
 grid-template-columns:repeat(7,1fr);
 border:1px solid var(--border);
+border-radius: 8px;
+overflow: hidden;
 }
 
 .day-header{
 background:var(--card);
-padding:15px;
+padding:15px 5px;
 font-weight:600;
 text-align:center;
 border-bottom:1px solid var(--border);
+font-size: 14px;
 }
 
 .day{
@@ -185,13 +195,18 @@ background:var(--card);
 height:140px;
 border-right:1px solid var(--border);
 border-bottom:1px solid var(--border);
-padding:8px;
+padding:6px;
 overflow:auto;
+}
+
+.day:nth-child(7n) {
+border-right: none;
 }
 
 .day-number{
 font-weight:700;
 margin-bottom:5px;
+font-size: 14px;
 }
 
 .today{
@@ -200,12 +215,15 @@ background:#e8f0fe;
 
 .event{
 padding:4px 6px;
-border-radius:8px;
+border-radius:6px;
 margin-bottom:4px;
 font-size:11px;
 color:white;
-cursor:pointer; /* Aggiunto cursore a manina */
+cursor:pointer;
 transition: opacity 0.2s;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
 }
 
 .event:hover {
@@ -234,15 +252,105 @@ background:var(--primary);
 color:white;
 width:50px;
 }
+
+/* =========================================
+   SCHERMATA LOGIN
+   ========================================= */
+#loginScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-container {
+    width: 90%;
+    max-width: 360px;
+    text-align: center;
+}
+
+/* =========================================
+   ADATTAMENTO PER SMARTPHONE (MOBILE)
+   ========================================= */
+@media (max-width: 800px) {
+    .main {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .content {
+        order: 1;
+        padding: 15px 10px;
+        overflow: visible;
+    }
+
+    .sidebar {
+        order: 2;
+        width: 100%;
+        padding: 15px 10px;
+        border-right: none;
+        border-top: 1px solid var(--border);
+        overflow: visible;
+    }
+
+    .calendar-title {
+        font-size: 20px;
+    }
+
+    .day {
+        height: 100px;
+        padding: 4px;
+    }
+
+    .day-header {
+        padding: 10px 2px;
+        font-size: 12px;
+    }
+
+    .event {
+        font-size: 10px;
+        padding: 3px;
+        border-radius: 4px;
+    }
+    
+    .logo {
+        font-size: 18px;
+    }
+}
 </style>
 </head>
 
 <body>
 
+<div id="loginScreen">
+    <div class="login-container">
+        <div class="card">
+            <h2 style="margin-bottom: 10px; color: var(--primary);">🔒 Area Riservata</h2>
+            <p style="font-size: 13px; margin-bottom: 20px; opacity: 0.8;">Benvenuta Amo, inserisci le tue credenziali per accedere all'agenda.</p>
+            
+            <input type="text" id="usernameInput" placeholder="Username (Nome Utente)">
+            <input type="password" id="passwordInput" placeholder="Password">
+            
+            <p id="loginError" style="color: var(--malattia); font-size: 14px; margin-bottom: 12px; font-weight: 600; display: none;">
+                Ops! Credenziali errate, Amo. ❌
+            </p>
+            
+            <button class="btn-primary" onclick="checkLogin()">Accedi</button>
+        </div>
+    </div>
+</div>
+
 <header>
 <div class="logo">📅 Agenda Ally Premium</div>
 <div class="header-actions">
 <button class="header-btn" onclick="toggleTheme()">🌙</button>
+<button class="header-btn" onclick="logout()" title="Esci dall'agenda">🚪</button>
 </div>
 </header>
 
@@ -287,12 +395,13 @@ width:50px;
 </div>
 
 <div class="card">
-<h3>📥 Importa Dati</h3>
-<input type="file" id="importFile" accept=".csv,.ics" style="padding: 5px;">
-<button class="btn-primary" onclick="importData()">Importa (.CSV / .ICS)</button>
+<h3>💾 Backup & Dati</h3>
+<button class="btn-primary" onclick="exportBackup()" style="margin-bottom: 10px; background: var(--planet);">Esporta Backup (JSON)</button>
+<hr style="border:0; border-top:1px solid var(--border); margin: 10px 0;">
+<input type="file" id="importFile" accept=".csv,.ics,.json" style="padding: 5px; font-size: 14px;">
+<button class="btn-primary" onclick="importData()">Importa (.JSON/.CSV)</button>
 <p style="font-size: 11px; margin-top: 8px; color: var(--text); opacity: 0.8;">
-*CSV (Turni): Data(YYYY-MM-DD), Location, Tipo, Extra<br>
-*ICS: Estrapola eventi come Impegni
+*JSON: Ripristina tutti i tuoi dati salvati
 </p>
 </div>
 
@@ -327,6 +436,34 @@ width:50px;
 </div>
 
 <script>
+// Controllo di Sicurezza Login Globale
+if(localStorage.getItem("ally_logged_in") === "true"){
+    document.getElementById("loginScreen").style.display = "none";
+}
+
+function checkLogin() {
+    const user = document.getElementById("usernameInput").value.trim();
+    const pass = document.getElementById("passwordInput").value;
+    const errorMsg = document.getElementById("loginError");
+
+    if(user === "alessia.damasco" && pass === "Monopoli1@") {
+        localStorage.setItem("ally_logged_in", "true");
+        document.getElementById("loginScreen").style.fadeOut = "slow"; // Effetto visivo semplice
+        document.getElementById("loginScreen").style.display = "none";
+        errorMsg.style.display = "none";
+    } else {
+        errorMsg.style.display = "block";
+    }
+}
+
+function logout() {
+    if(confirm("Vuoi uscire dall'agenda, Amo?")) {
+        localStorage.removeItem("ally_logged_in");
+        location.reload();
+    }
+}
+
+// Caricamento Dati Esistenti
 let shifts = JSON.parse(localStorage.getItem("ally_shifts") || "[]");
 let commitments = JSON.parse(localStorage.getItem("ally_commitments") || "[]");
 let todos = JSON.parse(localStorage.getItem("ally_todos") || "[]");
@@ -383,7 +520,7 @@ const isToday = today.getDate()===day && today.getMonth()===month && today.getFu
 
 let eventsHTML = "";
 
-// Render Turni (con onclick per eliminare)
+// Render Turni
 shifts.filter(s => s.date === fullDate).forEach(s => {
 let css = "goldbet";
 if(s.location === "Planet") css = "planet";
@@ -392,11 +529,11 @@ if(Number(s.extra) > 0) css = "extra";
 
 eventsHTML += `
 <div class="event ${css}" onclick="deleteShift(${s.id})" title="Clicca per eliminare">
-${s.type} ${s.location === 'Planet' ? '(P)' : '(G)'}
+${s.type.charAt(0)} ${s.location === 'Planet' ? '(P)' : '(G)'}
 </div>`;
 });
 
-// Render Impegni (con onclick per eliminare)
+// Render Impegni
 commitments.filter(c => c.date === fullDate).forEach(c => {
 eventsHTML += `
 <div class="event impegno" onclick="deleteCommitment(${c.id})" title="Clicca per eliminare">
@@ -468,7 +605,26 @@ renderCalendar();
 }
 
 /************************************************
- IMPORTAZIONE DATI (CSV / ICS)
+ ESPORTA BACKUP
+************************************************/
+function exportBackup() {
+const data = {
+shifts: shifts,
+commitments: commitments,
+todos: todos,
+salary: localStorage.getItem("ally_salary") || 0
+};
+const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+const downloadAnchorNode = document.createElement('a');
+downloadAnchorNode.setAttribute("href", dataStr);
+downloadAnchorNode.setAttribute("download", "agenda_ally_backup.json");
+document.body.appendChild(downloadAnchorNode);
+downloadAnchorNode.click();
+downloadAnchorNode.remove();
+}
+
+/************************************************
+ IMPORTAZIONE DATI
 ************************************************/
 function importData() {
 const fileInput = document.getElementById('importFile');
@@ -478,19 +634,40 @@ if (!file) return alert("Amo, devi prima selezionare un file da importare!");
 const reader = new FileReader();
 reader.onload = function(e) {
 const text = e.target.result;
-if (file.name.endsWith('.csv')) parseCSV(text);
+if (file.name.endsWith('.json')) parseJSON(text);
+else if (file.name.endsWith('.csv')) parseCSV(text);
 else if (file.name.endsWith('.ics')) parseICS(text);
-else alert("Ops! Formato non supportato. Usa un .CSV o un .ICS.");
+else alert("Ops! Formato non supportato. Usa un .JSON, .CSV o .ICS.");
 };
 reader.readAsText(file);
+}
+
+function parseJSON(text) {
+try {
+const data = JSON.parse(text);
+if (data.shifts) shifts = data.shifts;
+if (data.commitments) commitments = data.commitments;
+if (data.todos) todos = data.todos;
+if (data.salary !== undefined) {
+localStorage.setItem("ally_salary", data.salary);
+document.getElementById("baseSalary").value = data.salary;
+}
+saveData();
+renderCalendar();
+renderTodos();
+updateFinance();
+alert("Perfetto! Ho ripristinato tutto il tuo backup. 💛");
+document.getElementById('importFile').value = '';
+} catch(e) {
+alert("Ops, il file di backup sembra danneggiato!");
+}
 }
 
 function parseCSV(text) {
 const lines = text.split('\n');
 let count = 0;
-// Struttura attesa: Data(YYYY-MM-DD), Location(es. Goldbet/Planet), Tipo(es. Mattina), Extra
 lines.forEach((line, index) => {
-if (index === 0) return; // Salta l'intestazione
+if (index === 0) return; 
 const cols = line.split(',');
 if (cols.length >= 3) {
 shifts.push({
@@ -506,7 +683,6 @@ count++;
 saveData(); 
 renderCalendar();
 alert(`Fatto! Ho importato ${count} turni dal tuo CSV.`);
-// Reset input
 document.getElementById('importFile').value = '';
 }
 
@@ -521,7 +697,6 @@ currentEvent = {};
 } else if (line.startsWith('SUMMARY:')) {
 currentEvent.title = line.replace('SUMMARY:', '').trim();
 } else if (line.startsWith('DTSTART')) {
-// Estrapola data YYYYMMDD dall'ICS
 const dateMatch = line.match(/(\d{4})(\d{2})(\d{2})/);
 if (dateMatch) {
 currentEvent.date = `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
@@ -541,7 +716,6 @@ count++;
 saveData(); 
 renderCalendar();
 alert(`Fatto! Ho importato ${count} impegni dal tuo ICS.`);
-// Reset input
 document.getElementById('importFile').value = '';
 }
 
@@ -572,7 +746,7 @@ todos.forEach(todo => {
 container.innerHTML += `
 <div class="todo-item">
 <input type="checkbox" ${todo.done ? 'checked' : ''} onchange="toggleTodo(${todo.id})">
-<span style="text-decoration:${todo.done ? 'line-through' : 'none'}">${todo.text}</span>
+<span style="text-decoration:${todo.done ? 'line-through' : 'none'}; cursor:pointer;" onclick="toggleTodo(${todo.id})">${todo.text}</span>
 </div>`;
 });
 }
