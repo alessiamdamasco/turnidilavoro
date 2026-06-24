@@ -135,7 +135,6 @@ color:var(--text);
 font-size: 16px;
 }
 
-/* Fix per select visibili in dark mode */
 .dark select option {
 background: var(--card);
 color: var(--text);
@@ -345,7 +344,7 @@ width:50px;
 .modal-section-title {
     font-size: 15px;
     font-weight: 700;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     color: var(--primary);
 }
 
@@ -378,7 +377,7 @@ width:50px;
     }
 
     .day {
-        height: 100px;
+        height: 110px;
         padding: 4px;
     }
 
@@ -544,7 +543,7 @@ function logout() {
     }
 }
 
-// Caricamento Dati Esistenti
+// Caricamento Dati
 let shifts = JSON.parse(localStorage.getItem("ally_shifts") || "[]");
 let commitments = JSON.parse(localStorage.getItem("ally_commitments") || "[]");
 let todos = JSON.parse(localStorage.getItem("ally_todos") || "[]");
@@ -601,7 +600,7 @@ const isToday = today.getDate()===day && today.getMonth()===month && today.getFu
 
 let eventsHTML = "";
 
-// Render Turni
+// Render Turni (Gestisce turni multipli)
 shifts.filter(s => s.date === fullDate).forEach(s => {
 let css = "goldbet";
 if(s.location === "Planet") css = "planet";
@@ -614,7 +613,7 @@ ${s.type.charAt(0)} ${s.location === 'Planet' ? '(P)' : s.location === 'Malattia
 </div>`;
 });
 
-// Render Impegni
+// Render Impegni (Gestisce impegni multipli)
 commitments.filter(c => c.date === fullDate).forEach(c => {
 eventsHTML += `
 <div class="event impegno">
@@ -634,14 +633,13 @@ updateFinance();
 }
 
 /************************************************
- GESTIONE POP-UP (MODAL) GIORNATA
+ GESTIONE POP-UP GIORNATA (TURNI MULTIPLI)
 ************************************************/
 function openDayModal(dateStr) {
     const modal = document.getElementById("dayModal");
     const title = document.getElementById("modalDateTitle");
     const body = document.getElementById("modalBody");
     
-    // Formatta la data leggibile (es: 24 Giugno 2026)
     const d = new Date(dateStr);
     title.innerText = `📅 ${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
     
@@ -651,82 +649,88 @@ function openDayModal(dateStr) {
     let html = "";
     
     // --- SEZIONE TURNI ---
+    html += `<h4 style="margin-top:5px; margin-bottom:10px; color: var(--primary); font-size:16px;">🛠️ Turni di Lavoro</h4>`;
+    
+    // Elenco turni esistenti modificabili
     if(dayShifts.length > 0) {
         dayShifts.forEach(s => {
             html += `
-            <div style="margin-bottom: 15px; padding: 10px; border: 1px solid var(--border); border-radius: 12px;">
-                <div class="modal-section-title">🛠️ Modifica Turno</div>
-                <label style="font-size:12px; opacity:0.8;">Posto di lavoro:</label>
+            <div style="margin-bottom: 12px; padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: rgba(0,0,0,0.01);">
+                <div style="font-size:11px; font-weight:700; color:gray; margin-bottom:4px;">Modifica Turno:</div>
+                <label style="font-size:11px; opacity:0.8;">Posto di lavoro:</label>
                 <select id="modLocation_${s.id}">
                     <option value="Goldbet" ${s.location === 'Goldbet' ? 'selected' : ''}>Goldbet Stazione</option>
                     <option value="Planet" ${s.location === 'Planet' ? 'selected' : ''}>Planetwin365</option>
                     <option value="Malattia" ${s.location === 'Malattia' ? 'selected' : ''}>Malattia</option>
                 </select>
                 
-                <label style="font-size:12px; opacity:0.8;">Tipo Turno:</label>
+                <label style="font-size:11px; opacity:0.8;">Tipo Turno:</label>
                 <select id="modType_${s.id}">
                     <option value="Mattina" ${s.type === 'Mattina' ? 'selected' : ''}>Mattina</option>
                     <option value="Pomeriggio" ${s.type === 'Pomeriggio' ? 'selected' : ''}>Pomeriggio</option>
                 </select>
                 
-                <label style="font-size:12px; opacity:0.8;">Extra (€):</label>
+                <label style="font-size:11px; opacity:0.8;">Extra (€):</label>
                 <input type="number" id="modExtra_${s.id}" value="${s.extra || 0}" placeholder="Extra €">
                 
                 <div style="display:flex; gap:10px; margin-top:5px;">
-                    <button class="btn-primary" style="padding:8px; font-size:14px;" onclick="saveModalShift(${s.id})">Aggiorna</button>
-                    <button class="btn-danger" style="padding:8px; font-size:14px; width:40%;" onclick="deleteModalShift(${s.id})">Elimina</button>
+                    <button class="btn-primary" style="padding:8px; font-size:13px;" onclick="saveModalShift(${s.id})">Aggiorna</button>
+                    <button class="btn-danger" style="padding:8px; font-size:13px; width:40%;" onclick="deleteModalShift(${s.id})">Elimina</button>
                 </div>
             </div>`;
         });
-    } else {
-        // Form rapido per aggiungere Turno se assente
-        html += `
-        <div style="margin-bottom: 15px; padding: 10px; border: 1px dashed var(--border); border-radius: 12px;">
-            <div class="modal-section-title" style="color:gray;">➕ Aggiungi un Turno qui</div>
-            <select id="quickLocation">
-                <option value="Goldbet">Goldbet Stazione</option>
-                <option value="Planet">Planetwin365</option>
-                <option value="Malattia">Malattia</option>
-            </select>
-            <select id="quickType">
-                <option>Mattina</option>
-                <option>Pomeriggio</option>
-            </select>
-            <input type="number" id="quickExtra" placeholder="Extra €">
-            <button class="btn-primary" style="padding:8px; font-size:14px; background:var(--planet);" onclick="addModalShift('${dateStr}')">Aggiungi Turno</button>
-        </div>`;
     }
+    
+    // Box per inserire UN NUOVO TURNO (Sempre visibile per aggiunte multiple!)
+    html += `
+    <div style="margin-bottom: 15px; padding: 12px; border: 1px dashed var(--primary); border-radius: 12px; background: rgba(26, 115, 232, 0.02);">
+        <div class="modal-section-title">➕ Aggiungi un Turno</div>
+        <select id="quickLocation">
+            <option value="Goldbet">Goldbet Stazione</option>
+            <option value="Planet">Planetwin365</option>
+            <option value="Malattia">Malattia</option>
+        </select>
+        <select id="quickType">
+            <option>Mattina</option>
+            <option>Pomeriggio</option>
+        </select>
+        <input type="number" id="quickExtra" placeholder="Extra €">
+        <button class="btn-primary" style="padding:8px; font-size:14px; background:var(--planet);" onclick="addModalShift('${dateStr}')">Salva Turno</button>
+    </div>`;
     
     html += `<hr class="modal-divider">`;
     
     // --- SEZIONE IMPEGNI ---
+    html += `<h4 style="margin-top:5px; margin-bottom:10px; color: var(--impegno); font-size:16px;">⭐ Impegni e Appuntamenti</h4>`;
+    
+    // Elenco impegni esistenti modificabili
     if(dayCommitments.length > 0) {
         dayCommitments.forEach(c => {
             html += `
-            <div style="margin-bottom: 15px; padding: 10px; border: 1px solid var(--border); border-radius: 12px;">
-                <div class="modal-section-title">⭐ Modifica Impegno</div>
-                <label style="font-size:12px; opacity:0.8;">Titolo:</label>
+            <div style="margin-bottom: 12px; padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: rgba(0,0,0,0.01);">
+                <div style="font-size:11px; font-weight:700; color:gray; margin-bottom:4px;">Modifica Impegno:</div>
+                <label style="font-size:11px; opacity:0.8;">Titolo:</label>
                 <input type="text" id="modTitle_${c.id}" value="${c.title}">
                 
-                <label style="font-size:12px; opacity:0.8;">Ora:</label>
+                <label style="font-size:11px; opacity:0.8;">Ora:</label>
                 <input type="time" id="modTime_${c.id}" value="${c.time || ''}">
                 
                 <div style="display:flex; gap:10px; margin-top:5px;">
-                    <button class="btn-primary" style="padding:8px; font-size:14px;" onclick="saveModalCommitment(${c.id})">Aggiorna</button>
-                    <button class="btn-danger" style="padding:8px; font-size:14px; width:40%;" onclick="deleteModalCommitment(${c.id})">Elimina</button>
+                    <button class="btn-primary" style="padding:8px; font-size:13px;" onclick="saveModalCommitment(${c.id})">Aggiorna</button>
+                    <button class="btn-danger" style="padding:8px; font-size:13px; width:40%;" onclick="deleteModalCommitment(${c.id})">Elimina</button>
                 </div>
             </div>`;
         });
-    } else {
-        // Form rapido per aggiungere Impegno se assente
-        html += `
-        <div style="margin-bottom: 15px; padding: 10px; border: 1px dashed var(--border); border-radius: 12px;">
-            <div class="modal-section-title" style="color:gray;">⭐ Aggiungi un Impegno qui</div>
-            <input type="text" id="quickTitle" placeholder="Titolo Impegno">
-            <input type="time" id="quickTime">
-            <button class="btn-primary" style="padding:8px; font-size:14px; background:var(--impegno); color:black;" onclick="addModalCommitment('${dateStr}')">Aggiungi Impegno</button>
-        </div>`;
     }
+    
+    // Box per inserire UN NUOVO IMPEGNO (Sempre visibile per aggiunte multiple!)
+    html += `
+    <div style="margin-bottom: 5px; padding: 12px; border: 1px dashed var(--impegno); border-radius: 12px; background: rgba(255, 188, 4, 0.02);">
+        <div class="modal-section-title" style="color: var(--text);">⭐ Aggiungi un Impegno</div>
+        <input type="text" id="quickTitle" placeholder="Titolo Impegno">
+        <input type="time" id="quickTime">
+        <button class="btn-primary" style="padding:8px; font-size:14px; background:var(--impegno); color:black;" onclick="addModalCommitment('${dateStr}')">Salva Impegno</button>
+    </div>`;
     
     body.innerHTML = html;
     modal.style.display = "flex";
@@ -736,7 +740,7 @@ function closeDayModal() {
     document.getElementById("dayModal").style.display = "none";
 }
 
-// Azioni Salva/Elimina/Aggiungi nel Pop-up
+// Funzioni del Pop-up
 function saveModalShift(id) {
     const loc = document.getElementById(`modLocation_${id}`).value;
     const type = document.getElementById(`modType_${id}`).value;
@@ -809,7 +813,6 @@ function addModalCommitment(dateStr) {
     renderCalendar();
     closeDayModal();
 }
-
 
 /************************************************
  TURNI & IMPEGNI (SIDEBAR ANCORA ATTIVA)
